@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet, ActivityIndicator, FlatList } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-native";
+import { GameListItem } from '../components/GameListItem';
 import { request } from "graphql-request";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import config from "../config";
@@ -12,23 +12,6 @@ import { playerGames } from "../graphql/documents";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 
-const GameIcon = ({ uri }: { uri: string }) => {
-  const [error, setError] = React.useState(false);
-  if (error) {
-    return (
-      <View style={[styles.gameIcon, { justifyContent: 'center', alignItems: 'center' }]}> 
-        <MaterialIcons name="help-outline" size={40} color="#888" />
-      </View>
-    );
-  }
-  return (
-    <Image
-      source={{ uri }}
-      style={styles.gameIcon}
-      onError={() => setError(true)}
-    />
-  );
-};
 
 
 const API_URL = config.API_URL;
@@ -88,30 +71,9 @@ const RecentActivityScreen = () => {
       <FlatList
         data={games}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => {
-          const percent = item.achievementCount ? ((item.unlocked / item.achievementCount) * 100).toFixed(2) : "0.00";
-          return (
-            <View style={styles.gameRow}>
-              <GameIcon uri={item.iconUrl} />
-              <View style={styles.gameInfo}>
-                <Text style={styles.gameName}>{item.name}</Text>
-                {item.achievementCount > 0 && (
-                  <>
-                    <Text style={styles.gameMeta}>
-                      Achievements: <Text style={styles.metaValue}>{item.unlocked} of {item.achievementCount} ({percent}%)</Text>
-                    </Text>
-                    <Text style={styles.gameMeta}>
-                      Difficulty: <Text style={styles.metaValue}>{item.difficultyPercentage ? Number(item.difficultyPercentage).toFixed(2) : "0.00"}%</Text>
-                    </Text>
-                  </>
-                )}
-                <Text style={styles.gameMeta}>
-                  Last Played: <Text style={styles.metaValue}>{dayjs(item.lastPlayed).format('LLL')}</Text> (<Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
-                </Text>
-              </View>
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <GameListItem item={item} styles={styles} />
+        )}
         contentContainerStyle={{ paddingBottom: 32 }}
       />
     </View>

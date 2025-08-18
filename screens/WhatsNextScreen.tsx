@@ -1,11 +1,151 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import { GameListItem } from '../components/GameListItem';
+import { request } from "graphql-request";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from "../config";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import { playerGames } from "../graphql/documents";
+dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
 
-const WhatsNextScreen = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text style={{ fontSize: 24, fontWeight: "bold" }}>What&apos;s Next</Text>
-    <Text>Suggestions for your next achievement.</Text>
-  </View>
-);
+
+const API_URL = config.API_URL;
+
+const WhatsNextScreen = () => {
+  const [steamId, setSteamId] = useState<string | null>(null);
+  const [games, setGames] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.getItem("steamId").then((id) => {
+      setSteamId(id);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!steamId) return;
+    setLoading(true);
+    request(API_URL, playerGames, {
+      player: steamId,
+      incomplete: true,
+  orderBy: "-game_DifficultyPercentage",
+      limit: 12,
+    })
+      .then((data: any) => {
+        const edges = data?.player?.games?.edges || [];
+        const nextGames: any[] = edges.map((edge: any) => {
+          const g = edge.node.game;
+          return {
+            id: g.id,
+            name: g.name,
+            iconUrl: `https://media.steampowered.com/steam/apps/${g.id}/capsule_184x69.jpg`,
+            achievementCount: g.achievementCount,
+            difficultyPercentage: g.difficultyPercentage,
+            lastPlayed: edge.node.lastPlayed,
+            unlocked: edge.node.unlockedAchievementCount,
+            playtimeForever: edge.node.playtimeForever,
+            completed: edge.node.completed,
+          };
+        });
+        setGames(nextGames);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [steamId]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>What's Next</Text>
+      <FlatList
+        data={games}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <GameListItem item={item} styles={styles} />
+        )}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 24,
+    paddingHorizontal: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  gameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  gameIcon: {
+    width: 184,
+    height: 69,
+    borderRadius: 8,
+    marginRight: 16,
+    backgroundColor: "#eee",
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  gameInfo: {
+    flex: 1,
+  },
+  gameName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  gameMeta: {
+    fontSize: 15,
+    color: "#333",
+    marginBottom: 2,
+  },
+  metaValue: {
+    color: "#1976d2",
+    fontWeight: "bold",
+  },
+  achievementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    backgroundColor: '#f0f4fa',
+    borderRadius: 8,
+    padding: 8,
+  },
+  achievementName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  achievementDesc: {
+    color: '#555',
+    fontSize: 14,
+  },
+});
 
 export default WhatsNextScreen;
