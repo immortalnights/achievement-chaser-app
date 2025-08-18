@@ -8,7 +8,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
-const MainTabs = () => (
+const MainTabs = ({ onLogout }: { onLogout: () => void }) => (
   <Tab.Navigator>
     <Tab.Screen
       name="Home"
@@ -40,7 +40,7 @@ const MainTabs = () => (
     />
     <Tab.Screen
       name="Profile"
-      component={ProfileScreen}
+      children={() => <ProfileScreen onLogout={onLogout} />}
       options={{
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="person" size={size} color={color} />

@@ -32,6 +32,10 @@ export default function Index() {
     return <SteamLoginScreen onSubmit={handleSteamIdSubmit} />;
   }
 
-  // Show tab navigation once logged in
-  return <MainTabs />;
+  // Show tab navigation once logged in, pass logout callback
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    setSteamId(null);
+  };
+  return <MainTabs onLogout={handleLogout} />;
 }
