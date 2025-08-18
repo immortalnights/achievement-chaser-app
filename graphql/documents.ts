@@ -15,6 +15,25 @@ import { gql } from 'graphql-request';
 
 // Add your GraphQL documents below
 
+export const playerProfile = gql`
+    query PlayerProfile($player: BigInt!) {
+        player(id: $player) {
+            id
+            name
+            avatarLargeUrl
+            profileUrl
+            profile {
+                ownedGames
+                perfectGames
+                playedGames
+                totalPlaytime
+                lockedAchievements
+                unlockedAchievements
+            }
+        }
+    }
+`
+
 export const playerUnlockedAchievements = gql`
     query PlayerUnlockedAchievements(
         $player: BigInt!
