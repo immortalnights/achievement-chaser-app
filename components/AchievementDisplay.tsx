@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, Image, StyleSheet, PanResponder, Animated } from "react-native";
 import dayjs from "dayjs";
 
@@ -11,11 +11,11 @@ export interface Achievement {
 
 interface Props {
   achievements: Achievement[];
+  date: any;
+  setDate: (d: any) => void;
 }
 
-const AchievementDisplay: React.FC<Props> = ({ achievements }) => {
-  // Date state for swiping
-  const [date, setDate] = useState(dayjs());
+const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const today = dayjs();
   const isToday = date.isSame(today, "day");
@@ -48,9 +48,9 @@ const AchievementDisplay: React.FC<Props> = ({ achievements }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
-        setDate((prev) => prev.subtract(1, "day"));
+  setDate((prev: any) => prev.subtract(1, "day"));
       } else if (e.key === "ArrowRight" && !isToday) {
-        setDate((prev) => {
+        setDate((prev: any) => {
           const next = prev.add(1, "day");
           return next.isAfter(today, "day") ? prev : next;
         });
@@ -66,13 +66,13 @@ const AchievementDisplay: React.FC<Props> = ({ achievements }) => {
     onPanResponderRelease: (_, gestureState) => {
       if (gestureState.dx < -50 && !isToday) {
         // Swipe left: next day (not beyond today)
-        setDate((prev) => {
+        setDate((prev: any) => {
           const next = prev.add(1, "day");
           return next.isAfter(today, "day") ? prev : next;
         });
       } else if (gestureState.dx > 50) {
         // Swipe right: previous day
-        setDate((prev) => prev.subtract(1, "day"));
+  setDate((prev: any) => prev.subtract(1, "day"));
       }
     },
   });
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: 48,
     textAlign: "center",
   },
   infoSpacer: {
@@ -171,19 +171,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    padding: 12,
   },
   singleIcon: {
     width: 96,
     height: 96,
-    marginBottom: 16,
+    marginBottom: 0,
     borderRadius: 16,
     backgroundColor: "#eee",
   },
   name: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 8,
     textAlign: "center",
   },
   description: {
