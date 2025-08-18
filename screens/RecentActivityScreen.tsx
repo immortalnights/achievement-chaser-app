@@ -50,7 +50,7 @@ const RecentActivityScreen = () => {
     request(API_URL, playerGames, {
       player: steamId,
       orderBy: "-lastPlayed",
-      limit: 36,
+      limit: 12,
     })
       .then((data: any) => {
         const edges = data?.player?.games?.edges || [];
