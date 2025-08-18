@@ -1,0 +1,29 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Expo app for Android APK
+        run: npx expo build:android -t apk --non-interactive --no-wait
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: dist/*.apk

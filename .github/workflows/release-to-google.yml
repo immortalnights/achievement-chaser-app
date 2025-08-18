@@ -1,0 +1,35 @@
+name: Release to Google Play
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Expo app for Android
+        run: npx expo build:android --non-interactive --no-wait
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.yourcompany.yourapp
+          releaseFiles: app-release.aab
+          track: production
+          status: completed
+
+      - name: Notify on success
+        run: echo "Release deployed to Google Play!"
