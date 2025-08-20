@@ -50,19 +50,24 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
 
   // Keyboard navigation for web/PC
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        setDate((prev: any) => prev.subtract(1, "day"))
-      } else if (e.key === "ArrowRight" && !isToday) {
-        setDate((prev: any) => {
-          const next = prev.add(1, "day")
-          return next.isAfter(today, "day") ? prev : next
-        })
+    // Only add keyboard event listeners in web environments
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "ArrowLeft") {
+          setDate((prev: any) => prev.subtract(1, "day"))
+        } else if (e.key === "ArrowRight" && !isToday) {
+          setDate((prev: any) => {
+            const next = prev.add(1, "day")
+            return next.isAfter(today, "day") ? prev : next
+          })
+        }
       }
+      window.addEventListener("keydown", handleKeyDown)
+      return () => window.removeEventListener("keydown", handleKeyDown)
     }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isToday, today])
+    // No-op cleanup for native environments
+    return () => {}
+  }, [isToday, today, setDate])
 
   // PanResponder for swipe gestures
   const panResponder = PanResponder.create({
