@@ -1,64 +1,68 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text, Image, StyleSheet, PanResponder, Animated } from "react-native";
-import dayjs from "dayjs";
+import React, { useEffect, useRef } from "react"
+import { View, Text, Image, StyleSheet, PanResponder, Animated } from "react-native"
+import dayjs from "dayjs"
 
 export interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconUrl: string;
+  id: string
+  name: string
+  description: string
+  iconUrl: string
 }
 
 interface Props {
-  achievements: Achievement[];
-  date: any;
-  setDate: (d: any) => void;
+  achievements: Achievement[]
+  date: any
+  setDate: (d: any) => void
 }
 
 const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) => {
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const today = dayjs();
-  const isToday = date.isSame(today, "day");
+  const fadeAnim = useRef(new Animated.Value(1)).current
+  const today = dayjs()
+  const isToday = date.isSame(today, "day")
   // Format date as 'Monday, 18th August'
-  const day = date.date();
-  const month = date.format("MMMM");
-  const weekday = date.format("dddd");
+  const day = date.date()
+  const month = date.format("MMMM")
+  const weekday = date.format("dddd")
   function ordinalSuffix(n: number) {
-    if (n > 3 && n < 21) return "th";
+    if (n > 3 && n < 21) return "th"
     switch (n % 10) {
-      case 1: return "st";
-      case 2: return "nd";
-      case 3: return "rd";
-      default: return "th";
+      case 1:
+        return "st"
+      case 2:
+        return "nd"
+      case 3:
+        return "rd"
+      default:
+        return "th"
     }
   }
-  const todayStr = `${weekday}, ${day}${ordinalSuffix(day)} ${month}`;
+  const todayStr = `${weekday}, ${day}${ordinalSuffix(day)} ${month}`
 
   // Animate fade on date change
   useEffect(() => {
-    fadeAnim.setValue(0);
+    fadeAnim.setValue(0)
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 350,
       useNativeDriver: true,
-    }).start();
-  }, [date]);
+    }).start()
+  }, [date])
 
   // Keyboard navigation for web/PC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
-  setDate((prev: any) => prev.subtract(1, "day"));
+        setDate((prev: any) => prev.subtract(1, "day"))
       } else if (e.key === "ArrowRight" && !isToday) {
         setDate((prev: any) => {
-          const next = prev.add(1, "day");
-          return next.isAfter(today, "day") ? prev : next;
-        });
+          const next = prev.add(1, "day")
+          return next.isAfter(today, "day") ? prev : next
+        })
       }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isToday, today]);
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isToday, today])
 
   // PanResponder for swipe gestures
   const panResponder = PanResponder.create({
@@ -67,50 +71,56 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
       if (gestureState.dx < -50 && !isToday) {
         // Swipe left: next day (not beyond today)
         setDate((prev: any) => {
-          const next = prev.add(1, "day");
-          return next.isAfter(today, "day") ? prev : next;
-        });
+          const next = prev.add(1, "day")
+          return next.isAfter(today, "day") ? prev : next
+        })
       } else if (gestureState.dx > 50) {
         // Swipe right: previous day
-  setDate((prev: any) => prev.subtract(1, "day"));
+        setDate((prev: any) => prev.subtract(1, "day"))
       }
     },
-  });
+  })
 
   if (achievements.length === 0) {
     return (
-  <Animated.View style={[styles.emptyContainer, { opacity: fadeAnim, userSelect: 'none' }]} {...panResponder.panHandlers}>
+      <Animated.View
+        style={[styles.emptyContainer, { opacity: fadeAnim, userSelect: "none" }]}
+        {...panResponder.panHandlers}
+      >
         <Text style={styles.date}>{todayStr}</Text>
         <Text style={styles.emptyText}>No achievements earned for this day!</Text>
       </Animated.View>
-    );
+    )
   }
 
   if (achievements.length === 1) {
-    const achievement = achievements[0];
+    const achievement = achievements[0]
     return (
-  <Animated.View style={[styles.singleContainer, { opacity: fadeAnim, userSelect: 'none' }]} {...panResponder.panHandlers}>
+      <Animated.View
+        style={[styles.singleContainer, { opacity: fadeAnim, userSelect: "none" }]}
+        {...panResponder.panHandlers}
+      >
         <Text style={styles.date}>{todayStr}</Text>
-        <Image
-          source={{ uri: achievement.iconUrl }}
-          style={styles.singleIcon}
-        />
+        <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
         <Text style={styles.name}>{achievement.name}</Text>
         <Text style={styles.description}>{achievement.description}</Text>
       </Animated.View>
-    );
+    )
   }
 
   // Multiple achievements: first on its own row, rest in rows of three
-  const first = achievements[0];
-  const rest = achievements.slice(1);
-  const rows = [];
+  const first = achievements[0]
+  const rest = achievements.slice(1)
+  const rows = []
   for (let i = 0; i < rest.length; i += 3) {
-    rows.push(rest.slice(i, i + 3));
+    rows.push(rest.slice(i, i + 3))
   }
 
   return (
-  <Animated.View style={[styles.multiContainer, { opacity: fadeAnim, userSelect: 'none' }]} {...panResponder.panHandlers}>
+    <Animated.View
+      style={[styles.multiContainer, { opacity: fadeAnim, userSelect: "none" }]}
+      {...panResponder.panHandlers}
+    >
       <Text style={styles.date}>{todayStr}</Text>
       {/* First achievement row */}
       <View style={styles.firstRow}>
@@ -132,8 +142,8 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
         </View>
       ))}
     </Animated.View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   date: {
@@ -210,6 +220,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     alignItems: "center",
   },
-});
+})
 
-export default AchievementDisplay;
+export default AchievementDisplay

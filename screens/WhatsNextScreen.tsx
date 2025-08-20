@@ -1,43 +1,42 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
-import { GameListItem } from '../components/GameListItem';
-import { request } from "graphql-request";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import config from "../config";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import { playerGames } from "../graphql/documents";
-dayjs.extend(relativeTime);
-dayjs.extend(localizedFormat);
+import React, { useEffect, useState } from "react"
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native"
+import { GameListItem } from "../components/GameListItem"
+import { request } from "graphql-request"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import config from "../config"
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import localizedFormat from "dayjs/plugin/localizedFormat"
+import { playerGames } from "../graphql/documents"
+dayjs.extend(relativeTime)
+dayjs.extend(localizedFormat)
 
-
-const API_URL = config.API_URL;
+const API_URL = config.API_URL
 
 const WhatsNextScreen = () => {
-  const [steamId, setSteamId] = useState<string | null>(null);
-  const [games, setGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [steamId, setSteamId] = useState<string | null>(null)
+  const [games, setGames] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id);
-    });
-  }, []);
+      setSteamId(id)
+    })
+  }, [])
 
   useEffect(() => {
-    if (!steamId) return;
-    setLoading(true);
+    if (!steamId) return
+    setLoading(true)
     request(API_URL, playerGames, {
       player: steamId,
       incomplete: true,
-  orderBy: "-game_DifficultyPercentage",
+      orderBy: "-game_DifficultyPercentage",
       limit: 12,
     })
       .then((data: any) => {
-        const edges = data?.player?.games?.edges || [];
+        const edges = data?.player?.games?.edges || []
         const nextGames: any[] = edges.map((edge: any) => {
-          const g = edge.node.game;
+          const g = edge.node.game
           return {
             id: g.id,
             name: g.name,
@@ -48,37 +47,34 @@ const WhatsNextScreen = () => {
             unlocked: edge.node.unlockedAchievementCount,
             playtimeForever: edge.node.playtimeForever,
             completed: edge.node.completed,
-          };
-        });
-        setGames(nextGames);
-        setLoading(false);
+          }
+        })
+        setGames(nextGames)
+        setLoading(false)
       })
-      .catch(() => setLoading(false));
-  }, [steamId]);
+      .catch(() => setLoading(false))
+  }, [steamId])
 
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
-    );
+    )
   }
-
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>What's Next</Text>
       <FlatList
         data={games}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <GameListItem item={item} styles={styles} />
-        )}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <GameListItem item={item} styles={styles} />}
         contentContainerStyle={{ paddingBottom: 32 }}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -131,21 +127,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   achievementRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
-    backgroundColor: '#f0f4fa',
+    backgroundColor: "#f0f4fa",
     borderRadius: 8,
     padding: 8,
   },
   achievementName: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
   },
   achievementDesc: {
-    color: '#555',
+    color: "#555",
     fontSize: 14,
   },
-});
+})
 
-export default WhatsNextScreen;
+export default WhatsNextScreen

@@ -1,44 +1,41 @@
+import React, { useEffect, useState } from "react"
+import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-native"
+import { GameListItem } from "../components/GameListItem"
+import { request } from "graphql-request"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import config from "../config"
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import localizedFormat from "dayjs/plugin/localizedFormat"
+import { playerGames } from "../graphql/documents"
+dayjs.extend(relativeTime)
+dayjs.extend(localizedFormat)
 
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-native";
-import { GameListItem } from '../components/GameListItem';
-import { request } from "graphql-request";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import config from "../config";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import { playerGames } from "../graphql/documents";
-dayjs.extend(relativeTime);
-dayjs.extend(localizedFormat);
-
-
-
-const API_URL = config.API_URL;
+const API_URL = config.API_URL
 
 const RecentActivityScreen = () => {
-  const [steamId, setSteamId] = useState<string | null>(null);
-  const [games, setGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [steamId, setSteamId] = useState<string | null>(null)
+  const [games, setGames] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id);
-    });
-  }, []);
+      setSteamId(id)
+    })
+  }, [])
 
   useEffect(() => {
-    if (!steamId) return;
-    setLoading(true);
+    if (!steamId) return
+    setLoading(true)
     request(API_URL, playerGames, {
       player: steamId,
       orderBy: "-lastPlayed",
       limit: 12,
     })
       .then((data: any) => {
-        const edges = data?.player?.games?.edges || [];
+        const edges = data?.player?.games?.edges || []
         const recentGames: any[] = edges.map((edge: any) => {
-          const g = edge.node.game;
+          const g = edge.node.game
           return {
             id: g.id,
             name: g.name,
@@ -49,20 +46,20 @@ const RecentActivityScreen = () => {
             unlocked: edge.node.unlockedAchievementCount,
             playtimeForever: edge.node.playtimeForever,
             completed: edge.node.completed,
-          };
-        });
-        setGames(recentGames);
-        setLoading(false);
+          }
+        })
+        setGames(recentGames)
+        setLoading(false)
       })
-      .catch(() => setLoading(false));
-  }, [steamId]);
+      .catch(() => setLoading(false))
+  }, [steamId])
 
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
-    );
+    )
   }
 
   return (
@@ -70,15 +67,13 @@ const RecentActivityScreen = () => {
       <Text style={styles.title}>Recent Activity</Text>
       <FlatList
         data={games}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <GameListItem item={item} styles={styles} />
-        )}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <GameListItem item={item} styles={styles} />}
         contentContainerStyle={{ paddingBottom: 32 }}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -130,6 +125,6 @@ const styles = StyleSheet.create({
     color: "#1976d2",
     fontWeight: "bold",
   },
-});
+})
 
-export default RecentActivityScreen;
+export default RecentActivityScreen

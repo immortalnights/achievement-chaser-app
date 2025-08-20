@@ -1,12 +1,12 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import HomeScreen from "../screens/HomeScreen";
-import RecentActivityScreen from "../screens/RecentActivityScreen";
-import WhatsNextScreen from "../screens/WhatsNextScreen";
-import ProfileScreen from "../screens/ProfileScreen";
+import React from "react"
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
+import { MaterialIcons, Ionicons } from "@expo/vector-icons"
+import HomeScreen from "../screens/HomeScreen"
+import RecentActivityScreen from "../screens/RecentActivityScreen"
+import WhatsNextScreen from "../screens/WhatsNextScreen"
+import ProfileScreen from "../screens/ProfileScreen"
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator()
 
 const MainTabs = ({ onLogout }: { onLogout: () => void }) => (
   <Tab.Navigator>
@@ -14,18 +14,14 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => (
       name="Home"
       component={HomeScreen}
       options={{
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="home" size={size} color={color} />
-        ),
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
       }}
     />
     <Tab.Screen
       name="Recent"
       component={RecentActivityScreen}
       options={{
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="access-time" size={size} color={color} />
-        ),
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="access-time" size={size} color={color} />,
       }}
     />
     <Tab.Screen
@@ -33,21 +29,17 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => (
       component={WhatsNextScreen}
       options={{
         tabBarLabel: "What's Next",
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="lightbulb" size={size} color={color} />
-        ),
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="lightbulb" size={size} color={color} />,
       }}
     />
     <Tab.Screen
       name="Profile"
       children={() => <ProfileScreen onLogout={onLogout} />}
       options={{
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name="person" size={size} color={color} />
-        ),
+        tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
       }}
     />
   </Tab.Navigator>
-);
+)
 
-export default MainTabs;
+export default MainTabs

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import React, { useState } from "react"
+import { View, Text, TextInput, Button, StyleSheet } from "react-native"
 
 interface Props {
-  onSubmit: (steamId: string) => void;
+  onSubmit: (steamId: string) => void
 }
 
 const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
-  const [steamId, setSteamId] = useState("");
+  const [steamId, setSteamId] = useState("")
 
   return (
     <View style={styles.container}>
@@ -23,13 +23,13 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
         title="Continue"
         onPress={() => {
           if (steamId.trim()) {
-            onSubmit(steamId.trim());
+            onSubmit(steamId.trim())
           }
         }}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
   },
-});
+})
 
-export default SteamLoginScreen;
+export default SteamLoginScreen
