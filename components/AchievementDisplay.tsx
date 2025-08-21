@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react"
-import { View, Text, Image, StyleSheet, PanResponder, Animated } from "react-native"
 import dayjs from "dayjs"
+import React, { useEffect, useRef } from "react"
+import { Animated, Image, PanResponder, StyleSheet, Text, View } from "react-native"
 
 export interface Achievement {
   id: string
