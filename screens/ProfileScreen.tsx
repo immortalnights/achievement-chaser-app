@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator } from "react-native"
-import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons"
-import { request } from "graphql-request"
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { request } from "graphql-request"
+import React, { useEffect, useState } from "react"
+import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import config from "../config"
 import { playerProfile } from "../graphql/documents"
 
@@ -12,6 +12,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
   const [steamId, setSteamId] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     AsyncStorage.getItem("steamId").then((id) => {
@@ -22,18 +23,45 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
   useEffect(() => {
     if (!steamId) return
     setLoading(true)
+    setError(null)
     request(API_URL, playerProfile, { player: steamId })
       .then((data: any) => {
         setProfile(data.player)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => {
+        console.error("Profile load error:", err, "API URL:", API_URL)
+        setLoading(false)
+        setError("Failed to load profile. Please try again later.")
+      })
   }, [steamId])
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
+          <Text style={styles.logoutText}>Log out</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
+          <Text style={styles.logoutText}>Log out</Text>
+        </TouchableOpacity>
       </View>
     )
   }
