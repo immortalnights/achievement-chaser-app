@@ -1,6 +1,9 @@
-// Environment-based API URL configuration
-const isDev = process.env.NODE_ENV !== "production"
+// Environment-based API URL configuration for React Native
+const { Platform } = require('react-native')
 
 module.exports = {
-  API_URL: isDev ? "http://localhost:4000/graphql/" : "https://steam.seventh.space/graphql/",
+  API_URL:
+    Platform.OS === 'web'
+      ? "http://localhost:4000/graphql/"
+      : "https://steam.seventh.space/graphql/",
 }
