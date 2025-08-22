@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../components/AchievementDisplay"
 import { playerUnlockedAchievements } from "../graphql/documents"
 
@@ -69,7 +69,11 @@ const HomeScreen = () => {
         <Text style={styles.headerDate}>{date.format("dddd, D MMMM")}</Text>
       </View>
       {loading ? (
-        <ActivityIndicator size="large" />
+        <View style={styles.skeletonContainer}>
+          <View style={styles.skeletonTitle} />
+          <View style={styles.skeletonDescLine} />
+          <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
+        </View>
       ) : (
         <AchievementDisplay
           achievements={achievements}
@@ -102,6 +106,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#111827",
+  },
+  skeletonContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  skeletonTitle: {
+    width: "70%",
+    height: 24,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  skeletonDescLine: {
+    width: "85%",
+    height: 16,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  skeletonDescShort: {
+    width: "65%",
   },
 })
 
