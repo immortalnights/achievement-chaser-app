@@ -1,4 +1,3 @@
-import dayjs from "dayjs"
 import React, { useEffect, useRef } from "react"
 import type { GestureResponderEvent, PanResponderGestureState } from "react-native"
 import { Animated, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
@@ -12,34 +11,22 @@ export type Achievement = {
 
 type Props = {
   achievements: Achievement[]
-  date: any
-  setDate: (d: any) => void
   primaryIdx?: number
   onSelectAchievement?: (idx: number) => void
+  onPrevDay?: () => void
+  onNextDay?: () => void
+  canGoNext?: boolean
 }
 
-const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, primaryIdx = 0, onSelectAchievement }) => {
+const AchievementDisplay: React.FC<Props> = ({
+  achievements,
+  primaryIdx = 0,
+  onSelectAchievement,
+  onPrevDay,
+  onNextDay,
+  canGoNext = false,
+}) => {
   const fadeAnim = useRef(new Animated.Value(1)).current
-  const today = dayjs()
-  const isToday = date.isSame(today, "day")
-  // Format date as 'Monday, 18th August'
-  const day = date.date()
-  const month = date.format("MMMM")
-  const weekday = date.format("dddd")
-  function ordinalSuffix(n: number) {
-    if (n > 3 && n < 21) return "th"
-    switch (n % 10) {
-      case 1:
-        return "st"
-      case 2:
-        return "nd"
-      case 3:
-        return "rd"
-      default:
-        return "th"
-    }
-  }
-  const todayStr = `${weekday}, ${day}${ordinalSuffix(day)} ${month}`
 
   // Animate fade on date change
   useEffect(() => {
@@ -49,7 +36,7 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
       duration: 350,
       useNativeDriver: true,
     }).start()
-  }, [date, fadeAnim])
+  }, [achievements, fadeAnim])
 
   // Keyboard navigation for web/PC
   useEffect(() => {
@@ -57,12 +44,9 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
     if (typeof window !== "undefined" && typeof document !== "undefined") {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "ArrowLeft") {
-          setDate((prev: any) => prev.subtract(1, "day"))
-        } else if (e.key === "ArrowRight" && !isToday) {
-          setDate((prev: any) => {
-            const next = prev.add(1, "day")
-            return next.isAfter(today, "day") ? prev : next
-          })
+          onPrevDay && onPrevDay()
+        } else if (e.key === "ArrowRight") {
+          if (canGoNext && onNextDay) onNextDay()
         }
       }
       window.addEventListener("keydown", handleKeyDown)
@@ -70,22 +54,19 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
     }
     // No-op cleanup for native environments
     return () => {}
-  }, [isToday, today, setDate])
+  }, [canGoNext, onPrevDay, onNextDay])
 
   // PanResponder for swipe gestures
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_: GestureResponderEvent, gestureState: PanResponderGestureState) =>
       Math.abs(gestureState.dx) > 20,
     onPanResponderRelease: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.dx < -50 && !isToday) {
-        // Swipe left: next day (not beyond today)
-        setDate((prev: any) => {
-          const next = prev.add(1, "day")
-          return next.isAfter(today, "day") ? prev : next
-        })
+      if (gestureState.dx < -50) {
+        // Swipe left: next day (respect canGoNext)
+        if (canGoNext && onNextDay) onNextDay()
       } else if (gestureState.dx > 50) {
         // Swipe right: previous day
-        setDate((prev: any) => prev.subtract(1, "day"))
+        onPrevDay && onPrevDay()
       }
     },
   })
@@ -96,7 +77,7 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
         style={[styles.emptyContainer, { opacity: fadeAnim, userSelect: "none" }]}
         {...panResponder.panHandlers}
       >
-        <Text style={styles.date}>{todayStr}</Text>
+        {/* Date is shown in HomeScreen header */}
         <Text style={styles.emptyText}>No achievements earned for this day!</Text>
       </Animated.View>
     )
@@ -109,7 +90,7 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
         style={[styles.singleContainer, { opacity: fadeAnim, userSelect: "none" }]}
         {...panResponder.panHandlers}
       >
-        <Text style={styles.date}>{todayStr}</Text>
+        {/* Date is shown in HomeScreen header */}
         <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
         <Text style={styles.name}>{achievement.name}</Text>
         <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
@@ -130,7 +111,7 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, prim
       style={[styles.multiContainer, { opacity: fadeAnim, userSelect: "none" }]}
       {...panResponder.panHandlers}
     >
-      <Text style={styles.date}>{todayStr}</Text>
+      {/* Date is shown in HomeScreen header */}
       {/* Primary achievement row */}
       <View style={styles.firstRow}>
         <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />

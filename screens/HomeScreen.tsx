@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
-import { ActivityIndicator, StyleSheet, View } from "react-native"
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../components/AchievementDisplay"
 import { playerUnlockedAchievements } from "../graphql/documents"
 
@@ -64,15 +64,20 @@ const HomeScreen = () => {
   // Pass date and setDate to AchievementDisplay for navigation
   return (
     <View style={styles.container}>
+      {/* Header date (slightly toned down) */}
+      <View style={styles.header}>
+        <Text style={styles.headerDate}>{date.format("dddd, D MMMM")}</Text>
+      </View>
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
         <AchievementDisplay
           achievements={achievements}
-          date={date}
-          setDate={setDate}
           primaryIdx={primaryIdx}
           onSelectAchievement={handleSelectAchievement}
+          onPrevDay={() => setDate((prev: any) => prev.subtract(1, "day"))}
+          onNextDay={() => setDate((prev: any) => prev.add(1, "day"))}
+          canGoNext={!date.isSame(dayjs(), "day")}
         />
       )}
     </View>
@@ -83,6 +88,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  header: {
+    paddingTop: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  headerDate: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
   },
 })
 
