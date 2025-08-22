@@ -1,19 +1,20 @@
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
-import { View, StyleSheet, ActivityIndicator } from "react-native"
+import { ActivityIndicator, StyleSheet, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../components/AchievementDisplay"
 import { playerUnlockedAchievements } from "../graphql/documents"
-import { request } from "graphql-request"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 
-import config from "../config"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import config from "../config"
 dayjs.extend(utc)
 const API_URL = config.API_URL
 
 const HomeScreen = () => {
   const [steamId, setSteamId] = useState<string | null>(null)
   const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [primaryIdx, setPrimaryIdx] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState(dayjs())
 
@@ -47,10 +48,18 @@ const HomeScreen = () => {
           iconUrl: edge.node.achievement.iconUrl,
         }))
         setAchievements(mapped)
+        // Reset focus to first achievement for the new date/data
+        setPrimaryIdx(0)
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [steamId, date])
+
+  // Handler to change the focused (primary) achievement
+  const handleSelectAchievement = (idx: number) => {
+    if (idx < 0 || idx >= achievements.length) return
+    setPrimaryIdx(idx)
+  }
 
   // Pass date and setDate to AchievementDisplay for navigation
   return (
@@ -58,7 +67,13 @@ const HomeScreen = () => {
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
-        <AchievementDisplay achievements={achievements} date={date} setDate={setDate} />
+        <AchievementDisplay
+          achievements={achievements}
+          date={date}
+          setDate={setDate}
+          primaryIdx={primaryIdx}
+          onSelectAchievement={handleSelectAchievement}
+        />
       )}
     </View>
   )

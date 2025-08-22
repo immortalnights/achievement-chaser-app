@@ -1,21 +1,24 @@
 import dayjs from "dayjs"
 import React, { useEffect, useRef } from "react"
-import { Animated, Image, PanResponder, StyleSheet, Text, View } from "react-native"
+import type { GestureResponderEvent, PanResponderGestureState } from "react-native"
+import { Animated, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
-export interface Achievement {
+export type Achievement = {
   id: string
   name: string
   description: string
   iconUrl: string
 }
 
-interface Props {
+type Props = {
   achievements: Achievement[]
   date: any
   setDate: (d: any) => void
+  primaryIdx?: number
+  onSelectAchievement?: (idx: number) => void
 }
 
-const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) => {
+const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate, primaryIdx = 0, onSelectAchievement }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current
   const today = dayjs()
   const isToday = date.isSame(today, "day")
@@ -46,7 +49,7 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
       duration: 350,
       useNativeDriver: true,
     }).start()
-  }, [date])
+  }, [date, fadeAnim])
 
   // Keyboard navigation for web/PC
   useEffect(() => {
@@ -71,8 +74,9 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
 
   // PanResponder for swipe gestures
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
-    onPanResponderRelease: (_, gestureState) => {
+    onMoveShouldSetPanResponder: (_: GestureResponderEvent, gestureState: PanResponderGestureState) =>
+      Math.abs(gestureState.dx) > 20,
+    onPanResponderRelease: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       if (gestureState.dx < -50 && !isToday) {
         // Swipe left: next day (not beyond today)
         setDate((prev: any) => {
@@ -108,18 +112,18 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
         <Text style={styles.date}>{todayStr}</Text>
         <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
         <Text style={styles.name}>{achievement.name}</Text>
-        <Text style={styles.description}>{achievement.description}</Text>
+        <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+          {achievement.description}
+        </Text>
+        <View style={styles.infoSpacer} />
+        {/* Preserve space where the bottom row would be */}
+        <View style={[styles.achRow, styles.bottomRowSpacer]} />
       </Animated.View>
     )
   }
 
-  // Multiple achievements: first on its own row, rest in rows of three
-  const first = achievements[0]
-  const rest = achievements.slice(1)
-  const rows = []
-  for (let i = 0; i < rest.length; i += 3) {
-    rows.push(rest.slice(i, i + 3))
-  }
+  // Multiple achievements: show primary, and a single row below with all achievements (non-selected dimmed)
+  const primary = achievements[primaryIdx]
 
   return (
     <Animated.View
@@ -127,25 +131,42 @@ const AchievementDisplay: React.FC<Props> = ({ achievements, date, setDate }) =>
       {...panResponder.panHandlers}
     >
       <Text style={styles.date}>{todayStr}</Text>
-      {/* First achievement row */}
+      {/* Primary achievement row */}
       <View style={styles.firstRow}>
-        <Image source={{ uri: first.iconUrl }} style={styles.singleIcon} />
+        <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
       </View>
       <View style={styles.multiInfo}>
-        <Text style={styles.name}>{first.name}</Text>
-        <Text style={styles.description}>{first.description}</Text>
+        <Text style={styles.name}>{primary.name}</Text>
+        <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+          {primary.description}
+        </Text>
       </View>
       <View style={styles.infoSpacer} />
-      {/* Other achievements in rows of three */}
-      {rows.map((row, idx) => (
-        <View key={idx} style={styles.achRow}>
-          {row.map((ach) => (
-            <View key={ach.id} style={styles.multiItem}>
-              <Image source={{ uri: ach.iconUrl }} style={styles.multiIcon} />
+      {/* All achievements in one row; dim non-selected */}
+      <View style={styles.achRow}>
+        {achievements.map((ach: Achievement, idx: number) => (
+          <TouchableOpacity
+            key={ach.id}
+            style={styles.multiItem}
+            onPress={() => onSelectAchievement && onSelectAchievement(idx)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconFrame}>
+              <Image
+                source={{ uri: ach.iconUrl }}
+                style={[
+                  styles.multiIcon,
+                  {
+                    opacity: idx === primaryIdx ? 1 : 0.4,
+                    borderColor: idx === primaryIdx ? "#1976d2" : "#444",
+                    borderWidth: idx === primaryIdx ? 2 : 1,
+                  },
+                ]}
+              />
             </View>
-          ))}
-        </View>
-      ))}
+          </TouchableOpacity>
+        ))}
+      </View>
     </Animated.View>
   )
 }
@@ -170,6 +191,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    flexWrap: "wrap",
     marginBottom: 8,
   },
   emptyContainer: {
@@ -194,6 +216,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     borderRadius: 16,
     backgroundColor: "#eee",
+    borderWidth: 1,
+    borderColor: "#444",
   },
   name: {
     fontSize: 20,
@@ -204,6 +228,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#555",
     textAlign: "center",
+    lineHeight: 20,
+    minHeight: 60,
   },
   multiContainer: {
     flex: 1,
@@ -220,10 +246,26 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 12,
     backgroundColor: "#eee",
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  iconFrame: {
+    width: 64,
+    height: 64,
+    justifyContent: "center",
+    alignItems: "center",
   },
   multiInfo: {
     marginTop: 16,
     alignItems: "center",
+  },
+  selectedBorder: {
+    borderWidth: 2,
+    borderColor: "#1976d2",
+  },
+  bottomRowSpacer: {
+    height: 64,
+    marginBottom: 8,
   },
 })
 
