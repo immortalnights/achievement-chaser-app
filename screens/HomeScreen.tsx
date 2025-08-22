@@ -70,9 +70,19 @@ const HomeScreen = () => {
       </View>
       {loading ? (
         <View style={styles.skeletonContainer}>
+          <View style={styles.skeletonIcon} />
           <View style={styles.skeletonTitle} />
           <View style={styles.skeletonDescLine} />
           <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
+          {/* Reserve space similar to info spacer between text and row */}
+          <View style={styles.skeletonInfoSpacer} />
+          {/* Placeholder row to reserve space for achievement thumbnails */}
+          <View style={styles.skeletonAchRow}>
+            <View style={styles.skeletonMiniIcon} />
+            <View style={styles.skeletonMiniIcon} />
+            <View style={styles.skeletonMiniIcon} />
+            <View style={styles.skeletonMiniIcon} />
+          </View>
         </View>
       ) : (
         <AchievementDisplay
@@ -120,6 +130,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 12,
   },
+  skeletonIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 16,
+    backgroundColor: "#e5e7eb",
+    borderWidth: 1,
+    borderColor: "#444",
+    marginBottom: 12,
+  },
   skeletonDescLine: {
     width: "85%",
     height: 16,
@@ -129,6 +148,26 @@ const styles = StyleSheet.create({
   },
   skeletonDescShort: {
     width: "65%",
+  },
+  skeletonInfoSpacer: {
+    height: 24,
+  },
+  skeletonAchRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: 8,
+  },
+  skeletonMiniIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: "#e5e7eb",
+    borderWidth: 1,
+    borderColor: "#444",
+    marginHorizontal: 8,
+    marginBottom: 8,
   },
 })
 
