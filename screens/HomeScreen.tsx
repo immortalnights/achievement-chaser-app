@@ -74,6 +74,7 @@ const HomeScreen = () => {
           <View style={styles.skeletonTitle} />
           <View style={styles.skeletonDescLine} />
           <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
+          <View style={styles.skeletonDescPad} />
           {/* Reserve space similar to info spacer between text and row */}
           <View style={styles.skeletonInfoSpacer} />
           {/* Placeholder row to reserve space for achievement thumbnails */}
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: "#e5e7eb",
     borderRadius: 6,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   skeletonIcon: {
     width: 96,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e5e7eb",
     borderWidth: 1,
     borderColor: "#444",
-    marginBottom: 12,
+    marginBottom: 24,
   },
   skeletonDescLine: {
     width: "85%",
@@ -148,6 +149,9 @@ const styles = StyleSheet.create({
   },
   skeletonDescShort: {
     width: "65%",
+  },
+  skeletonDescPad: {
+    height: 12,
   },
   skeletonInfoSpacer: {
     height: 24,
