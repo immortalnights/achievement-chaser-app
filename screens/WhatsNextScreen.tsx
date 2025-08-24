@@ -55,23 +55,23 @@ const WhatsNextScreen = () => {
       .catch(() => setLoading(false))
   }, [steamId])
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
-      </View>
-    )
-  }
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>What's Next</Text>
-      <FlatList
-        data={games}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <GameListItem item={item} styles={styles} />}
-        contentContainerStyle={{ paddingBottom: 32 }}
-      />
+      <View style={styles.header}>
+  <Text style={styles.headerTitle}>{"What's Next"}</Text>
+      </View>
+      {loading ? (
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={games}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <GameListItem item={item} styles={styles} />}
+          contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 12, paddingTop: 16 }}
+        />
+      )}
     </View>
   )
 }
@@ -80,14 +80,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 24,
-    paddingHorizontal: 12,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
+  header: {
+    paddingTop: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  headerTitle: {
     textAlign: "center",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  centerContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
   },
   gameRow: {
     flexDirection: "row",
