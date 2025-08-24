@@ -24,6 +24,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account-key.json",
+        "track": "internal",
+        "releaseStatus": "completed"
+      }
+    }
   }
 }
