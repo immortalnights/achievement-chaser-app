@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react"
-import { View, Text, Image, StyleSheet, Linking, Pressable } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import dayjs from "dayjs"
 import { request } from "graphql-request"
+import React, { useEffect, useMemo, useState } from "react"
+import { Image, Linking, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native"
 import config from "../config"
 import { playerUnlockedAchievements } from "../graphql/documents"
 
@@ -11,6 +11,9 @@ const API_URL = config.API_URL
 export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any; steamId?: string | null }) => {
   const [error, setError] = useState(false)
   const [recent, setRecent] = useState<{ id: string; iconUrl: string }[]>([])
+  const { width } = useWindowDimensions()
+  const isSmall = width <= 420
+  const desiredCount = isSmall ? 9 : 5
 
   const percent = useMemo(() => {
     if (!item || !item.achievementCount) return 0
@@ -35,7 +38,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
       player: steamId,
       game: Number(item.id),
       orderBy: "-datetime",
-      limit: 5,
+      limit: desiredCount,
     })
       .then((data: any) => {
         if (ignore) return
@@ -49,43 +52,15 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
     return () => {
       ignore = true
     }
-  }, [steamId, item?.id])
+  }, [steamId, item?.id, desiredCount])
 
   return (
     <View style={styles.gameRow}>
       <View style={localStyles.cardBody}>
-        {/* Top row: icon + main info */}
-        <View style={localStyles.topRow}>
-        {item.iconUrl && !error ? (
-          <Pressable
-            accessibilityRole="link"
-            onPress={() => {
-              if (item?.id) {
-                const url = `https://store.steampowered.com/app/${item.id}/`
-                Linking.openURL(url).catch(() => {})
-              }
-            }}
-          >
-            <Image source={{ uri: item.iconUrl }} style={styles.gameIcon} onError={() => setError(true)} />
-          </Pressable>
-        ) : (
-          <Pressable
-            accessibilityRole="link"
-            onPress={() => {
-              if (item?.id) {
-                const url = `https://store.steampowered.com/app/${item.id}/`
-                Linking.openURL(url).catch(() => {})
-              }
-            }}
-          >
-            <View style={[styles.gameIcon, { justifyContent: "center", alignItems: "center" }]}> 
-              <MaterialIcons name="help-outline" size={40} color="#888" />
-            </View>
-          </Pressable>
-        )}
-        <View style={styles.gameInfo}>
+        {/* Small screens: title spans the top across icon + metadata */}
+        {isSmall && (
           <Text
-            style={styles.gameName}
+            style={[styles.gameName, { marginBottom: 8 }]}
             accessibilityRole="link"
             onPress={() => {
               if (item?.id) {
@@ -96,49 +71,120 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
           >
             {item.name}
           </Text>
-          {/* Keep difficulty and last played in the top row */}
-          {item.difficultyPercentage != null && (
-            <Text style={styles.gameMeta}>
-              Difficulty: <Text style={styles.metaValue}>{Number(item.difficultyPercentage).toFixed(2)}%</Text>
-            </Text>
+        )}
+        {/* Top row: icon + main info */}
+        <View style={localStyles.topRow}>
+          {item.iconUrl && !error ? (
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                if (item?.id) {
+                  const url = `https://store.steampowered.com/app/${item.id}/`
+                  Linking.openURL(url).catch(() => {})
+                }
+              }}
+            >
+              <Image source={{ uri: item.iconUrl }} style={styles.gameIcon} onError={() => setError(true)} />
+            </Pressable>
+          ) : (
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                if (item?.id) {
+                  const url = `https://store.steampowered.com/app/${item.id}/`
+                  Linking.openURL(url).catch(() => {})
+                }
+              }}
+            >
+              <View style={[styles.gameIcon, { justifyContent: "center", alignItems: "center" }]}>
+                <MaterialIcons name="help-outline" size={40} color="#888" />
+              </View>
+            </Pressable>
           )}
-          {!!playtimeText && (
-            <Text style={styles.gameMeta}>
-              Playtime: <Text style={styles.metaValue}>{playtimeText}</Text>
-            </Text>
-          )}
-          <Text style={styles.gameMeta}>
-            Last Played:{" "}
-            <Text style={styles.metaValue}>
-              {dayjs(item.lastPlayed).isValid() ? (
-                <>
-                  {dayjs(item.lastPlayed).format("LLL")} (
-                  <Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
-                </>
-              ) : (
-                "Never played"
-              )}
-            </Text>
-          </Text>
-        </View>
-        </View>
-        {/* Footer row: achievements summary + progress + recent icons */}
-        {item.achievementCount > 0 && (
-          <View style={localStyles.footerRow}>
-            <View style={localStyles.progressBlock}>
-              <Text style={styles.gameMeta}>
-                Achievements: <Text style={styles.metaValue}>{item.unlocked} of {item.achievementCount} ({percent.toFixed(2)}%)</Text>
+          <View style={styles.gameInfo}>
+            {!isSmall && (
+              <Text
+                style={styles.gameName}
+                accessibilityRole="link"
+                onPress={() => {
+                  if (item?.id) {
+                    const url = `https://store.steampowered.com/app/${item.id}/`
+                    Linking.openURL(url).catch(() => {})
+                  }
+                }}
+              >
+                {item.name}
               </Text>
-              <View style={localStyles.progressBar}>
-                <View style={[localStyles.progressFill, { width: `${percent}%` }]} />
+            )}
+            {/* Keep difficulty and last played in the top row */}
+            {item.difficultyPercentage != null && (
+              <Text style={styles.gameMeta}>
+                Difficulty: <Text style={styles.metaValue}>{Number(item.difficultyPercentage).toFixed(2)}%</Text>
+              </Text>
+            )}
+            {!!playtimeText && (
+              <Text style={styles.gameMeta}>
+                Playtime: <Text style={styles.metaValue}>{playtimeText}</Text>
+              </Text>
+            )}
+            <Text style={styles.gameMeta}>
+              Last Played:{" "}
+              <Text style={styles.metaValue}>
+                {dayjs(item.lastPlayed).isValid() ? (
+                  <>
+                    {isSmall
+                      ? dayjs(item.lastPlayed).format("ddd, D MMM")
+                      : dayjs(item.lastPlayed).format("dddd, D MMMM, h:mm A")} (
+                    <Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
+                  </>
+                ) : (
+                  "Never played"
+                )}
+              </Text>
+            </Text>
+          </View>
+        </View>
+        {/* Footer: achievements summary + progress + recent icons */}
+        {item.achievementCount > 0 && (
+          isSmall ? (
+            <View style={localStyles.footerCol}>
+              <View style={[localStyles.progressBlock, { width: "100%" }]}>
+                <Text style={styles.gameMeta}>
+                  Achievements: {" "}
+                  <Text style={styles.metaValue}>
+                    {item.unlocked} of {item.achievementCount} ({percent.toFixed(2)}%)
+                  </Text>
+                </Text>
+                <View style={localStyles.progressBar}>
+                  <View style={[localStyles.progressFill, { width: `${percent}%` }]} />
+                </View>
+              </View>
+              <View style={[localStyles.recentAchRow, { width: "100%", minWidth: 0, marginTop: 8 }]}>
+                {recent.slice(0, desiredCount).map((a) => (
+                  <Image key={a.id} source={{ uri: a.iconUrl }} style={localStyles.achIcon} />
+                ))}
               </View>
             </View>
-            <View style={localStyles.recentAchRow}>
-              {recent.map((a) => (
-                <Image key={a.id} source={{ uri: a.iconUrl }} style={localStyles.achIcon} />
-              ))}
+          ) : (
+            <View style={localStyles.footerRow}>
+              <View style={localStyles.progressBlock}>
+                <Text style={styles.gameMeta}>
+                  Achievements: {" "}
+                  <Text style={styles.metaValue}>
+                    {item.unlocked} of {item.achievementCount} ({percent.toFixed(2)}%)
+                  </Text>
+                </Text>
+                <View style={localStyles.progressBar}>
+                  <View style={[localStyles.progressFill, { width: `${percent}%` }]} />
+                </View>
+              </View>
+              <View style={[localStyles.recentAchRow, { minWidth: 32 * desiredCount + 8 * (desiredCount - 1) }]}>
+                {recent.slice(0, desiredCount).map((a) => (
+                  <Image key={a.id} source={{ uri: a.iconUrl }} style={localStyles.achIcon} />
+                ))}
+              </View>
             </View>
-          </View>
+          )
         )}
       </View>
     </View>
@@ -163,6 +209,11 @@ const localStyles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
+  footerCol: {
+    width: "100%",
+    marginTop: 12,
+    flexDirection: "column",
+  },
   progressBlock: {
     flex: 1,
   },
@@ -178,10 +229,10 @@ const localStyles = StyleSheet.create({
     backgroundColor: "#1976d2",
   },
   recentAchRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  minWidth: 32 * 5 + 8 * 4, // width for 5 icons with 8px gaps
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  // minWidth computed per-screen where needed for layout stability
   },
   achIcon: {
     width: 32,
