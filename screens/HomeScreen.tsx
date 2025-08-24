@@ -46,6 +46,9 @@ const HomeScreen = () => {
           name: edge.node.achievement.displayName,
           description: edge.node.achievement.description || "",
           iconUrl: edge.node.achievement.iconUrl,
+          gameName: edge.node.game?.name,
+          gameId: edge.node.game?.id,
+          difficultyPercentage: edge.node.game?.difficultyPercentage,
         }))
         setAchievements(mapped)
         // Reset focus to first achievement for the new date/data
@@ -93,6 +96,7 @@ const HomeScreen = () => {
           onPrevDay={() => setDate((prev: any) => prev.subtract(1, "day"))}
           onNextDay={() => setDate((prev: any) => prev.add(1, "day"))}
           canGoNext={!date.isSame(dayjs(), "day")}
+          steamId={steamId}
         />
       )}
     </View>

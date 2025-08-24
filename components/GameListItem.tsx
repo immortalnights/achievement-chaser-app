@@ -134,8 +134,8 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                   <>
                     {isSmall
                       ? dayjs(item.lastPlayed).format("ddd, D MMM")
-                      : dayjs(item.lastPlayed).format("dddd, D MMMM, h:mm A")} (
-                    <Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
+                      : dayjs(item.lastPlayed).format("dddd, D MMMM, h:mm A")}{" "}
+                    (<Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
                   </>
                 ) : (
                   "Never played"
@@ -145,12 +145,12 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
           </View>
         </View>
         {/* Footer: achievements summary + progress + recent icons */}
-        {item.achievementCount > 0 && (
-          isSmall ? (
+        {item.achievementCount > 0 &&
+          (isSmall ? (
             <View style={localStyles.footerCol}>
               <View style={[localStyles.progressBlock, { width: "100%" }]}>
                 <Text style={styles.gameMeta}>
-                  Achievements: {" "}
+                  Achievements:{" "}
                   <Text style={styles.metaValue}>
                     {item.unlocked} of {item.achievementCount} ({percent.toFixed(2)}%)
                   </Text>
@@ -169,7 +169,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
             <View style={localStyles.footerRow}>
               <View style={localStyles.progressBlock}>
                 <Text style={styles.gameMeta}>
-                  Achievements: {" "}
+                  Achievements:{" "}
                   <Text style={styles.metaValue}>
                     {item.unlocked} of {item.achievementCount} ({percent.toFixed(2)}%)
                   </Text>
@@ -184,8 +184,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                 ))}
               </View>
             </View>
-          )
-        )}
+          ))}
       </View>
     </View>
   )
@@ -232,7 +231,7 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-  // minWidth computed per-screen where needed for layout stability
+    // minWidth computed per-screen where needed for layout stability
   },
   achIcon: {
     width: 32,

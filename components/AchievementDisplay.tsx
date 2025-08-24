@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from "react"
 import type { GestureResponderEvent, PanResponderGestureState } from "react-native"
-import { Animated, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Animated, Image, Linking, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export type Achievement = {
   id: string
   name: string
   description: string
   iconUrl: string
+  gameName?: string
+  gameId?: string | number
+  difficultyPercentage?: number
 }
 
 type Props = {
@@ -16,6 +19,7 @@ type Props = {
   onPrevDay?: () => void
   onNextDay?: () => void
   canGoNext?: boolean
+  steamId?: string | null
 }
 
 const AchievementDisplay: React.FC<Props> = ({
@@ -25,6 +29,7 @@ const AchievementDisplay: React.FC<Props> = ({
   onPrevDay,
   onNextDay,
   canGoNext = false,
+  steamId,
 }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current
 
@@ -92,6 +97,22 @@ const AchievementDisplay: React.FC<Props> = ({
       >
         {/* Date is shown in HomeScreen header */}
         <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
+        {!!achievement.gameName && (
+          <Text
+            style={styles.gameTitle}
+            accessibilityRole="link"
+            onPress={() => {
+              if (achievement.gameId && steamId) {
+                const isNumeric = /^\d+$/.test(String(steamId))
+                const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                const url = `${base}/${steamId}/stats/${achievement.gameId}/achievements`
+                Linking.openURL(url).catch(() => {})
+              }
+            }}
+          >
+            {achievement.gameName}
+          </Text>
+        )}
         <Text style={styles.name}>{achievement.name}</Text>
         <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
           {achievement.description}
@@ -117,6 +138,22 @@ const AchievementDisplay: React.FC<Props> = ({
         <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
       </View>
       <View style={styles.multiInfo}>
+        {!!primary.gameName && (
+          <Text
+            style={styles.gameTitle}
+            accessibilityRole="link"
+            onPress={() => {
+              if (primary.gameId && steamId) {
+                const isNumeric = /^\d+$/.test(String(steamId))
+                const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                const url = `${base}/${steamId}/stats/${primary.gameId}/achievements`
+                Linking.openURL(url).catch(() => {})
+              }
+            }}
+          >
+            {primary.gameName}
+          </Text>
+        )}
         <Text style={styles.name}>{primary.name}</Text>
         <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
           {primary.description}
@@ -204,6 +241,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  gameTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1976d2",
+    textAlign: "center",
+    marginBottom: 2,
   },
   description: {
     fontSize: 16,
