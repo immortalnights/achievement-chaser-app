@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react"
-import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-native"
-import { GameListItem } from "../components/GameListItem"
-import { request } from "graphql-request"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import config from "../config"
 import dayjs from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime"
 import localizedFormat from "dayjs/plugin/localizedFormat"
+import relativeTime from "dayjs/plugin/relativeTime"
+import { request } from "graphql-request"
+import React, { useEffect, useState } from "react"
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native"
+import { GameListItem } from "../components/GameListItem"
+import config from "../config"
 import { playerGames } from "../graphql/documents"
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
@@ -67,7 +67,7 @@ const RecentActivityScreen = () => {
         <FlatList
           data={games}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <GameListItem item={item} styles={styles} />}
+          renderItem={({ item }) => <GameListItem item={item} styles={styles} steamId={steamId} />}
           contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 12, paddingTop: 16 }}
         />
       )}
