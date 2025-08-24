@@ -14,6 +14,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
   const { width } = useWindowDimensions()
   const isSmall = width <= 420
   const desiredCount = isSmall ? 9 : 5
+  const canLinkIcon = Boolean(steamId && item?.id && Number(item?.achievementCount) > 0)
 
   const percent = useMemo(() => {
     if (!item || !item.achievementCount) return 0
@@ -75,23 +76,31 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
         {/* Top row: icon + main info */}
         <View style={localStyles.topRow}>
           {item.iconUrl && !error ? (
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => {
-                if (item?.id) {
-                  const url = `https://store.steampowered.com/app/${item.id}/`
-                  Linking.openURL(url).catch(() => {})
-                }
-              }}
-            >
+            canLinkIcon ? (
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => {
+                  if (item?.id && steamId) {
+                    const isNumeric = /^\d+$/.test(String(steamId))
+                    const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                    const url = `${base}/${steamId}/stats/${item.id}/achievements`
+                    Linking.openURL(url).catch(() => {})
+                  }
+                }}
+              >
+                <Image source={{ uri: item.iconUrl }} style={styles.gameIcon} onError={() => setError(true)} />
+              </Pressable>
+            ) : (
               <Image source={{ uri: item.iconUrl }} style={styles.gameIcon} onError={() => setError(true)} />
-            </Pressable>
-          ) : (
+            )
+          ) : canLinkIcon ? (
             <Pressable
               accessibilityRole="link"
               onPress={() => {
-                if (item?.id) {
-                  const url = `https://store.steampowered.com/app/${item.id}/`
+                if (item?.id && steamId) {
+                  const isNumeric = /^\d+$/.test(String(steamId))
+                  const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                  const url = `${base}/${steamId}/stats/${item.id}/achievements`
                   Linking.openURL(url).catch(() => {})
                 }
               }}
@@ -100,6 +109,10 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                 <MaterialIcons name="help-outline" size={40} color="#888" />
               </View>
             </Pressable>
+          ) : (
+            <View style={[styles.gameIcon, { justifyContent: "center", alignItems: "center" }]}>
+              <MaterialIcons name="help-outline" size={40} color="#888" />
+            </View>
           )}
           <View style={styles.gameInfo}>
             {!isSmall && (
