@@ -68,7 +68,7 @@ const HomeScreen = () => {
       <View style={styles.header}>
         <Text style={styles.headerDate}>{date.format("dddd, D MMMM")}</Text>
       </View>
-  {loading ? (
+      {loading ? (
         <View style={styles.skeletonContainer}>
           <View style={styles.skeletonIcon} />
           <View style={styles.skeletonTitle} />
