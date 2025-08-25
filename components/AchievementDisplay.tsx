@@ -96,7 +96,9 @@ const AchievementDisplay: React.FC<Props> = ({
         {...panResponder.panHandlers}
       >
         {/* Date is shown in HomeScreen header */}
-        <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
+        <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
+          <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
+        </View>
         {!!achievement.gameName && (
           <Text
             style={styles.gameTitle}
@@ -135,7 +137,9 @@ const AchievementDisplay: React.FC<Props> = ({
       {/* Date is shown in HomeScreen header */}
       {/* Primary achievement row */}
       <View style={styles.firstRow}>
-        <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
+        <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
+          <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
+        </View>
       </View>
       <View style={styles.multiInfo}>
         {!!primary.gameName && (
@@ -231,11 +235,14 @@ const styles = StyleSheet.create({
   singleIcon: {
     width: 96,
     height: 96,
-    marginBottom: 24,
     borderRadius: 16,
     backgroundColor: "#eee",
     borderWidth: 1,
     borderColor: "#444",
+  },
+  singleIconContainer: {
+    marginBottom: 24,
+    borderRadius: 16,
   },
   name: {
     fontSize: 20,
@@ -289,10 +296,25 @@ const styles = StyleSheet.create({
     height: 64,
     justifyContent: "center",
     alignItems: "center",
+  borderRadius: 12,
+  // Subtle shadow for mini icons
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 4,
   },
   multiInfo: {
     marginTop: 16,
     alignItems: "center",
+  },
+  // Stronger shadow for the primary icon
+  shadowPrimary: {
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
   },
   selectedBorder: {
     borderWidth: 2,

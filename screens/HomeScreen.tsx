@@ -144,6 +144,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#444",
     marginBottom: 24,
+  // Subtle shadow to mimic primary icon shadow
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 6,
   },
   skeletonDescLine: {
     width: "85%",
@@ -177,6 +183,12 @@ const styles = StyleSheet.create({
     borderColor: "#444",
     marginHorizontal: 8,
     marginBottom: 8,
+  // Light shadow to mimic mini icon shadow
+  shadowColor: "#000",
+  shadowOpacity: 0.12,
+  shadowRadius: 4,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 4,
   },
 })
 
