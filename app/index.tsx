@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react"
-import { View, ActivityIndicator } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import SteamLoginScreen from "../screens/SteamLoginScreen"
+import { useEffect, useState } from "react"
+import { ActivityIndicator, View } from "react-native"
 import MainTabs from "../navigation/MainTabs"
+import SteamLoginScreen from "../screens/SteamLoginScreen"
 
 export default function Index() {
   const [steamId, setSteamId] = useState<string | null>(null)

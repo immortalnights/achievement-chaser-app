@@ -1,9 +1,9 @@
+import { ClientError, request } from "graphql-request"
 import React, { useState } from "react"
-import { View, Text, TextInput, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native"
-import { request, ClientError } from "graphql-request"
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
 import { searchPlayers } from "../graphql/documents"
-import ScreenContainer from "../components/ScreenContainer"
 
 interface Props {
   onSubmit: (steamId: string) => void
@@ -32,7 +32,7 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
           autoCorrect={false}
         />
       </View>
-  <View style={styles.errorSlot}>{error ? <Text style={styles.errorText}>{error}</Text> : null}</View>
+      <View style={styles.errorSlot}>{error ? <Text style={styles.errorText}>{error}</Text> : null}</View>
       <View style={{ marginTop: 8, width: "100%", maxWidth: 480 }}>
         <TouchableOpacity
           accessibilityRole="button"
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#d32f2f",
-  textAlign: "center",
+    textAlign: "center",
   },
   errorSlot: {
     width: "100%",
@@ -123,12 +123,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   btn: {
-  width: "50%",
+    width: "50%",
     backgroundColor: "#1976d2",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
-  alignSelf: "center",
+    alignSelf: "center",
   },
   btnDisabled: {
     opacity: 0.7,
