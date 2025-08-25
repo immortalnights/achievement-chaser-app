@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import React from "react"
-import SteamLoginScreen from "../screens/SteamLoginScreen"
+import SteamLoginScreen from "../components/SteamLoginScreen"
 
 export default function Login() {
   const router = useRouter()
