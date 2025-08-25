@@ -1,6 +1,9 @@
+import { ClientError, request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import config from "../config"
 import { useAccount } from "../context/AccountContext"
+import { searchPlayers } from "../graphql/documents"
 
 type Props = {
   visible: boolean
@@ -11,6 +14,8 @@ type Props = {
 export default function AccountSwitcher({ visible, onClose, onChanged }: Props) {
   const { accounts, activeSteamId, addAccount, removeAccount, setActive, refresh: refreshAccounts } = useAccount()
   const [newId, setNewId] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const API_URL = config.API_URL
 
   useEffect(() => {
     if (visible) {
@@ -26,11 +31,26 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
   }
 
   const handleAdd = async () => {
-    const id = newId.trim()
-    if (!id) return
-    await addAccount(id)
-    setNewId("")
-    onChanged && onChanged()
+    const input = newId.trim()
+    if (!input) return
+    setError(null)
+    try {
+      const data: any = await request(API_URL, searchPlayers, { name: input })
+      const found = data?.player
+      if (!found?.id) {
+        setError("Unable to find player. Please check the name or ID.")
+        return
+      }
+      await addAccount(String(found.id), found.name || String(found.id))
+      setNewId("")
+      onChanged && onChanged()
+    } catch (e: any) {
+      if (e instanceof ClientError || (e && e.response && e.response.errors)) {
+        setError("Unable to find player. Please try again.")
+      } else {
+        setError("Request failed. Please try again.")
+      }
+    }
   }
 
   const handleRemove = async (id: string) => {
@@ -45,13 +65,13 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
           <Text style={styles.title}>Accounts</Text>
           <FlatList
             data={accounts}
-            keyExtractor={(item) => item}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={styles.row}>
-                <TouchableOpacity style={styles.rowLeft} onPress={() => handleSwitch(item)}>
-                  <Text style={[styles.rowText, item === activeSteamId && styles.active]}>{item}</Text>
+                <TouchableOpacity style={styles.rowLeft} onPress={() => handleSwitch(item.id)}>
+                  <Text style={[styles.rowText, item.id === activeSteamId && styles.active]}>{item.name}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleRemove(item)}>
+                <TouchableOpacity onPress={() => handleRemove(item.id)}>
                   <Text style={styles.remove}>Remove</Text>
                 </TouchableOpacity>
               </View>
@@ -70,6 +90,7 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
               <Text style={styles.addBtnText}>Add</Text>
             </TouchableOpacity>
           </View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
           </TouchableOpacity>
@@ -129,6 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   addBtnText: { color: "#fff", fontWeight: "600" },
+  errorText: { color: "#d32f2f", textAlign: "center", marginTop: 8 },
   closeBtn: { marginTop: 12, alignSelf: "center" },
   closeText: { color: "#1976d2", fontWeight: "600", fontSize: 16 },
 })

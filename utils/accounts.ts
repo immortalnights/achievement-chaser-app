@@ -4,18 +4,32 @@ const ACCOUNTS_KEY = "accounts"
 const ACTIVE_KEY = "activeSteamId"
 const LEGACY_KEY = "steamId"
 
-export async function getAccounts(): Promise<string[]> {
+export type Account = { id: string; name: string }
+
+export async function getAccounts(): Promise<Account[]> {
   try {
     const raw = await AsyncStorage.getItem(ACCOUNTS_KEY)
-    const list: unknown = raw ? JSON.parse(raw) : []
-    return Array.isArray(list) ? (list as string[]) : []
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    if (Array.isArray(parsed)) {
+      // Migration: if array of strings, convert to accounts with name=id
+      if (parsed.length > 0 && typeof parsed[0] === "string") {
+        const converted = (parsed as string[]).map((id) => ({ id, name: id }))
+        await AsyncStorage.setItem(ACCOUNTS_KEY, JSON.stringify(converted))
+        return converted
+      }
+      return parsed as Account[]
+    }
+    return []
   } catch {
     return []
   }
 }
 
-export async function setAccounts(list: string[]): Promise<void> {
-  await AsyncStorage.setItem(ACCOUNTS_KEY, JSON.stringify(Array.from(new Set(list))))
+export async function setAccounts(list: Account[]): Promise<void> {
+  // ensure unique by id
+  const map = new Map<string, Account>()
+  list.forEach((a) => map.set(a.id, a))
+  await AsyncStorage.setItem(ACCOUNTS_KEY, JSON.stringify(Array.from(map.values())))
 }
 
 export async function getActiveSteamId(): Promise<string | null> {
@@ -35,10 +49,10 @@ export async function setActiveSteamId(id: string): Promise<void> {
   await AsyncStorage.setItem(ACTIVE_KEY, id)
 }
 
-export async function addAccount(id: string): Promise<void> {
+export async function addAccount(id: string, name?: string): Promise<void> {
   const cur = await getAccounts()
-  if (!cur.includes(id)) {
-    cur.push(id)
+  if (!cur.some((a) => a.id === id)) {
+    cur.push({ id, name: name || id })
     await setAccounts(cur)
   }
   await setActiveSteamId(id)
@@ -46,12 +60,12 @@ export async function addAccount(id: string): Promise<void> {
 
 export async function removeAccount(id: string): Promise<void> {
   const cur = await getAccounts()
-  const next = cur.filter((x) => x !== id)
+  const next = cur.filter((a) => a.id !== id)
   await setAccounts(next)
   const active = await AsyncStorage.getItem(ACTIVE_KEY)
   if (active === id) {
     // choose another active or clear
-    const fallback = next[0] ?? null
+    const fallback = next[0]?.id ?? null
     if (fallback) await setActiveSteamId(fallback)
     else await AsyncStorage.removeItem(ACTIVE_KEY)
   }

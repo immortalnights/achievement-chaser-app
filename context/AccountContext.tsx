@@ -5,22 +5,23 @@ import {
   getActiveSteamId as getActiveSteamIdUtil,
   removeAccount as removeAccountUtil,
   setActiveSteamId as setActiveSteamIdUtil,
+  type Account,
 } from "../utils/accounts"
 
 type AccountContextValue = {
-  accounts: string[]
+  accounts: Account[]
   activeSteamId: string | null
   loading: boolean
   refresh: () => Promise<void>
   setActive: (id: string) => Promise<void>
-  addAccount: (id: string) => Promise<void>
+  addAccount: (id: string, name?: string) => Promise<void>
   removeAccount: (id: string) => Promise<void>
 }
 
 const AccountContext = createContext<AccountContextValue | undefined>(undefined)
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
-  const [accounts, setAccounts] = useState<string[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
   const [activeSteamId, setActiveSteamIdState] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -50,8 +51,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
         await setActiveSteamIdUtil(id)
         await load()
       },
-      addAccount: async (id: string) => {
-        await addAccountUtil(id)
+      addAccount: async (id: string, name?: string) => {
+        await addAccountUtil(id, name)
         await load()
       },
       removeAccount: async (id: string) => {
