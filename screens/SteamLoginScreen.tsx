@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from "react-native"
-import { request } from "graphql-request"
+import { View, Text, TextInput, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native"
+import { request, ClientError } from "graphql-request"
 import config from "../config"
 import { searchPlayers } from "../graphql/documents"
 import ScreenContainer from "../components/ScreenContainer"
@@ -24,15 +24,19 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
           style={styles.input}
           placeholder="Steam Username or ID"
           value={steamId}
-          onChangeText={setSteamId}
+          onChangeText={(v) => {
+            setSteamId(v)
+            if (error) setError(null)
+          }}
           autoCapitalize="none"
           autoCorrect={false}
         />
       </View>
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
-      <View style={{ marginTop: 8 }}>
-        <Button
-          title={submitting ? "Please wait…" : "Continue"}
+  <View style={styles.errorSlot}>{error ? <Text style={styles.errorText}>{error}</Text> : null}</View>
+      <View style={{ marginTop: 8, width: "100%", maxWidth: 480 }}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          style={[styles.btn, submitting && styles.btnDisabled]}
           disabled={submitting}
           onPress={async () => {
             const input = steamId.trim()
@@ -56,19 +60,29 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
               } else {
                 setError("Unable to find player. Please try again.")
               }
-            } catch {
-              setError("Unable to find player. Please try again.")
+            } catch (e: any) {
+              // Distinguish between GraphQL response errors (request succeeded but API returned errors)
+              // and network/request failures (fetch failed, timeouts, etc.)
+              if (e instanceof ClientError || (e && e.response && e.response.errors)) {
+                setError("Unable to find player. Please try again.")
+              } else {
+                setError("Request failed. Please try again.")
+              }
             } finally {
               setSubmitting(false)
             }
           }}
-        />
+        >
+          {submitting ? (
+            <View style={styles.btnContent}>
+              <ActivityIndicator color="#fff" />
+              <Text style={[styles.btnText, { marginLeft: 8 }]}>Please wait.</Text>
+            </View>
+          ) : (
+            <Text style={styles.btnText}>Continue</Text>
+          )}
+        </TouchableOpacity>
       </View>
-      {submitting && (
-        <View style={{ marginTop: 12 }}>
-          <ActivityIndicator />
-        </View>
-      )}
     </ScreenContainer>
   )
 }
@@ -100,7 +114,34 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#d32f2f",
+  textAlign: "center",
+  },
+  errorSlot: {
+    width: "100%",
+    maxWidth: 480,
+    minHeight: 20,
     marginTop: 4,
+  },
+  btn: {
+  width: "50%",
+    backgroundColor: "#1976d2",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  alignSelf: "center",
+  },
+  btnDisabled: {
+    opacity: 0.7,
+  },
+  btnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  btnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 })
 
