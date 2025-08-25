@@ -1,8 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { Redirect } from "expo-router"
 import { useEffect, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
-import MainTabs from "../navigation/MainTabs"
-import SteamLoginScreen from "../screens/SteamLoginScreen"
 
 export default function Index() {
   const [steamId, setSteamId] = useState<string | null>(null)
@@ -15,11 +14,6 @@ export default function Index() {
     })
   }, [])
 
-  const handleSteamIdSubmit = async (id: string) => {
-    await AsyncStorage.setItem("steamId", id)
-    setSteamId(id)
-  }
-
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -29,13 +23,7 @@ export default function Index() {
   }
 
   if (!steamId) {
-    return <SteamLoginScreen onSubmit={handleSteamIdSubmit} />
+    return <Redirect href="/login" />
   }
-
-  // Show tab navigation once logged in, pass logout callback
-  const handleLogout = async () => {
-    await AsyncStorage.clear()
-    setSteamId(null)
-  }
-  return <MainTabs onLogout={handleLogout} />
+  return <Redirect href="/(tabs)/home" />
 }

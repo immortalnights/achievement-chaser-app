@@ -70,10 +70,9 @@ const AchievementDisplay: React.FC<Props> = ({
 
   if (achievements.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={styles.inlineContainer}>
         <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
           <View style={styles.cardInnerCenter}>
-            {/* Date is shown in HomeScreen header */}
             <Text style={styles.emptyText}>
               {isToday ? "No achievements earned yet today." : "No achievements were earned on this day."}
             </Text>
@@ -89,7 +88,7 @@ const AchievementDisplay: React.FC<Props> = ({
   const primary = achievements[safeIdx]
 
   return (
-    <View style={styles.multiContainer}>
+    <View style={styles.inlineContainer}>
       <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
         {/* Date is shown in HomeScreen header */}
         {/* Primary achievement row */}
@@ -160,6 +159,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 600,
     alignSelf: "center",
+    marginHorizontal: 12,
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
     padding: 16,
@@ -198,11 +198,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginBottom: 8,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
+  inlineContainer: {
+    width: "100%",
     alignItems: "center",
-    padding: 24,
   },
   emptyText: {
     fontSize: 18,
@@ -255,12 +253,7 @@ const styles = StyleSheet.create({
     color: "#1976d2",
     fontWeight: "bold",
   },
-  multiContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
+  // Removed vertical centering to keep card flush under the date label on Home
   multiItem: {
     marginHorizontal: 8,
     marginBottom: 8,
