@@ -256,6 +256,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     minHeight: 60,
   },
+  meta: {
+    fontSize: 15,
+    color: "#333",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  metaValue: {
+    color: "#1976d2",
+    fontWeight: "bold",
+  },
   multiContainer: {
     flex: 1,
     alignItems: "center",

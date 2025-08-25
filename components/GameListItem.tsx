@@ -135,12 +135,6 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                 {item.name}
               </Text>
             )}
-            {/* Keep difficulty and last played in the top row */}
-            {item.difficultyPercentage != null && (
-              <Text style={styles.gameMeta}>
-                Difficulty: <Text style={styles.metaValue}>{Number(item.difficultyPercentage).toFixed(2)}%</Text>
-              </Text>
-            )}
             {!!playtimeText && (
               <Text style={styles.gameMeta}>
                 Playtime: <Text style={styles.metaValue}>{playtimeText}</Text>
@@ -161,6 +155,11 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                 )}
               </Text>
             </Text>
+            {item.difficultyPercentage != null && (
+              <Text style={styles.gameMeta}>
+                Difficulty: <Text style={styles.metaValue}>{Number(item.difficultyPercentage).toFixed(2)}%</Text>
+              </Text>
+            )}
           </View>
         </View>
         {/* Footer: achievements summary + progress + recent icons */}
