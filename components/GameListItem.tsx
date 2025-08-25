@@ -13,7 +13,13 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
   const [recent, setRecent] = useState<{ id: string; iconUrl: string }[]>([])
   const { width } = useWindowDimensions()
   const isSmall = width <= 420
-  const desiredCount = isSmall ? 9 : 5
+  // Compute how many 32px icons fit with ~10px padding per item, approximating 48px horizontal gutters
+  const ICON_SIZE = 32
+  const ITEM_PADDING = 10
+  const H_GUTTERS = 48 // list + card padding approximation (12 + 12 + 12 + 12)
+  const available = Math.max(0, width - H_GUTTERS)
+  const smallFitCount = Math.max(1, Math.floor(available / (ICON_SIZE + ITEM_PADDING)))
+  const desiredCount = isSmall ? smallFitCount : 5
   const canLinkIcon = Boolean(steamId && item?.id && Number(item?.achievementCount) > 0)
 
   const percent = useMemo(() => {
@@ -172,9 +178,14 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                   <View style={[localStyles.progressFill, { width: `${percent}%` }]} />
                 </View>
               </View>
-              <View style={[localStyles.recentAchRow, { width: "100%", minWidth: 0, marginTop: 8 }]}>
+              <View
+                style={[
+                  localStyles.recentAchRow,
+                  { width: "100%", minWidth: 0, marginTop: 8, justifyContent: "space-around", flexWrap: "wrap" },
+                ]}
+              >
                 {recent.slice(0, desiredCount).map((a) => (
-                  <Image key={a.id} source={{ uri: a.iconUrl }} style={localStyles.achIcon} />
+                  <Image key={a.id} source={{ uri: a.iconUrl }} style={[localStyles.achIcon, { marginLeft: 0, marginHorizontal: 5, marginBottom: 8 }]} />
                 ))}
               </View>
             </View>
@@ -191,7 +202,12 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                   <View style={[localStyles.progressFill, { width: `${percent}%` }]} />
                 </View>
               </View>
-              <View style={[localStyles.recentAchRow, { minWidth: 32 * desiredCount + 8 * (desiredCount - 1) }]}>
+              <View
+                style={[
+                  localStyles.recentAchRow,
+                  { minWidth: 32 * desiredCount + 8 * (desiredCount - 1), justifyContent: "space-around", flexWrap: "wrap" },
+                ]}
+              >
                 {recent.slice(0, desiredCount).map((a) => (
                   <Image key={a.id} source={{ uri: a.iconUrl }} style={localStyles.achIcon} />
                 ))}
