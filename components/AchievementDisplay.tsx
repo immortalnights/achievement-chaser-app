@@ -82,8 +82,10 @@ const AchievementDisplay: React.FC<Props> = ({
         style={[styles.emptyContainer, { opacity: fadeAnim, userSelect: "none" }]}
         {...panResponder.panHandlers}
       >
-        {/* Date is shown in HomeScreen header */}
-        <Text style={styles.emptyText}>No achievements earned for this day!</Text>
+        <View style={styles.card}>
+          {/* Date is shown in HomeScreen header */}
+          <Text style={styles.emptyText}>No achievements earned for this day!</Text>
+        </View>
       </Animated.View>
     )
   }
@@ -95,33 +97,35 @@ const AchievementDisplay: React.FC<Props> = ({
         style={[styles.singleContainer, { opacity: fadeAnim, userSelect: "none" }]}
         {...panResponder.panHandlers}
       >
-        {/* Date is shown in HomeScreen header */}
-        <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
-          <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
-        </View>
-        {!!achievement.gameName && (
-          <Text
-            style={styles.gameTitle}
-            accessibilityRole="link"
-            onPress={() => {
-              if (achievement.gameId && steamId) {
-                const isNumeric = /^\d+$/.test(String(steamId))
-                const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
-                const url = `${base}/${steamId}/stats/${achievement.gameId}/achievements`
-                Linking.openURL(url).catch(() => {})
-              }
-            }}
-          >
-            {achievement.gameName}
+        <View style={styles.card}>
+          {/* Date is shown in HomeScreen header */}
+          <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
+            <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
+          </View>
+          {!!achievement.gameName && (
+            <Text
+              style={styles.gameTitle}
+              accessibilityRole="link"
+              onPress={() => {
+                if (achievement.gameId && steamId) {
+                  const isNumeric = /^\d+$/.test(String(steamId))
+                  const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                  const url = `${base}/${steamId}/stats/${achievement.gameId}/achievements`
+                  Linking.openURL(url).catch(() => {})
+                }
+              }}
+            >
+              {achievement.gameName}
+            </Text>
+          )}
+          <Text style={styles.name}>{achievement.name}</Text>
+          <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+            {achievement.description}
           </Text>
-        )}
-        <Text style={styles.name}>{achievement.name}</Text>
-        <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
-          {achievement.description}
-        </Text>
-        <View style={styles.infoSpacer} />
-        {/* Preserve space where the bottom row would be */}
-        <View style={[styles.achRow, styles.bottomRowSpacer]} />
+          <View style={styles.infoSpacer} />
+          {/* Preserve space where the bottom row would be */}
+          <View style={[styles.achRow, styles.bottomRowSpacer]} />
+        </View>
       </Animated.View>
     )
   }
@@ -134,66 +138,77 @@ const AchievementDisplay: React.FC<Props> = ({
       style={[styles.multiContainer, { opacity: fadeAnim, userSelect: "none" }]}
       {...panResponder.panHandlers}
     >
-      {/* Date is shown in HomeScreen header */}
-      {/* Primary achievement row */}
-      <View style={styles.firstRow}>
-        <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
-          <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
+      <View style={styles.card}>
+        {/* Date is shown in HomeScreen header */}
+        {/* Primary achievement row */}
+        <View style={styles.firstRow}>
+          <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
+            <Image source={{ uri: primary.iconUrl }} style={styles.singleIcon} />
+          </View>
         </View>
-      </View>
-      <View style={styles.multiInfo}>
-        {!!primary.gameName && (
-          <Text
-            style={styles.gameTitle}
-            accessibilityRole="link"
-            onPress={() => {
-              if (primary.gameId && steamId) {
-                const isNumeric = /^\d+$/.test(String(steamId))
-                const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
-                const url = `${base}/${steamId}/stats/${primary.gameId}/achievements`
-                Linking.openURL(url).catch(() => {})
-              }
-            }}
-          >
-            {primary.gameName}
+        <View style={styles.multiInfo}>
+          {!!primary.gameName && (
+            <Text
+              style={styles.gameTitle}
+              accessibilityRole="link"
+              onPress={() => {
+                if (primary.gameId && steamId) {
+                  const isNumeric = /^\d+$/.test(String(steamId))
+                  const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
+                  const url = `${base}/${steamId}/stats/${primary.gameId}/achievements`
+                  Linking.openURL(url).catch(() => {})
+                }
+              }}
+            >
+              {primary.gameName}
+            </Text>
+          )}
+          <Text style={styles.name}>{primary.name}</Text>
+          <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+            {primary.description}
           </Text>
-        )}
-        <Text style={styles.name}>{primary.name}</Text>
-        <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
-          {primary.description}
-        </Text>
-      </View>
-      <View style={styles.infoSpacer} />
-      {/* All achievements in one row; dim non-selected */}
-      <View style={styles.achRow}>
-        {achievements.map((ach: Achievement, idx: number) => (
-          <TouchableOpacity
-            key={ach.id}
-            style={styles.multiItem}
-            onPress={() => onSelectAchievement && onSelectAchievement(idx)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconFrame}>
-              <Image
-                source={{ uri: ach.iconUrl }}
-                style={[
-                  styles.multiIcon,
-                  {
-                    opacity: idx === primaryIdx ? 1 : 0.4,
-                    borderColor: idx === primaryIdx ? "#1976d2" : "#444",
-                    borderWidth: idx === primaryIdx ? 2 : 1,
-                  },
-                ]}
-              />
-            </View>
-          </TouchableOpacity>
-        ))}
+        </View>
+        <View style={styles.infoSpacer} />
+        {/* All achievements in one row; dim non-selected */}
+        <View style={styles.achRow}>
+          {achievements.map((ach: Achievement, idx: number) => (
+            <TouchableOpacity
+              key={ach.id}
+              style={styles.multiItem}
+              onPress={() => onSelectAchievement && onSelectAchievement(idx)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.iconFrame}>
+                <Image
+                  source={{ uri: ach.iconUrl }}
+                  style={[
+                    styles.multiIcon,
+                    {
+                      opacity: idx === primaryIdx ? 1 : 0.4,
+                      borderColor: idx === primaryIdx ? "#1976d2" : "#444",
+                      borderWidth: idx === primaryIdx ? 2 : 1,
+                    },
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
+  card: {
+    width: "100%",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
   date: {
     fontSize: 18,
     fontWeight: "bold",
