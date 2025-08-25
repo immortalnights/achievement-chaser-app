@@ -54,10 +54,10 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
               if (found?.id) {
                 onSubmit(String(found.id))
               } else {
-                setError("No player found with that name.")
+                setError("Unable to find player. Please try again.")
               }
             } catch {
-              setError("Unable to search for player. Please try again.")
+              setError("Unable to find player. Please try again.")
             } finally {
               setSubmitting(false)
             }
