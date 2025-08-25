@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native"
@@ -6,6 +5,7 @@ import { GameListItem } from "../../components/GameListItem"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
 import { playerGames } from "../../graphql/documents"
+import { getActiveSteamId } from "../../utils/accounts"
 
 const API_URL = config.API_URL
 
@@ -15,9 +15,7 @@ export default function WhatsNext() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id)
-    })
+    getActiveSteamId().then((id) => setSteamId(id))
   }, [])
 
   useEffect(() => {

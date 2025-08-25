@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import dayjs from "dayjs"
 import localizedFormat from "dayjs/plugin/localizedFormat"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -9,6 +8,7 @@ import { GameListItem } from "../../components/GameListItem"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
 import { playerGames } from "../../graphql/documents"
+import { getActiveSteamId } from "../../utils/accounts"
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
 
@@ -20,9 +20,7 @@ export default function Recent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id)
-    })
+    getActiveSteamId().then((id) => setSteamId(id))
   }, [])
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import { ClientError, request } from "graphql-request"
 import React, { useState } from "react"
@@ -6,6 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View 
 import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
 import { searchPlayers } from "../graphql/documents"
+import { addAccount } from "../utils/accounts"
 
 export default function Login() {
   const router = useRouter()
@@ -26,7 +26,7 @@ export default function Login() {
 
     // Numeric input: treat as SteamID directly
     if (/^\d+$/.test(input)) {
-      await AsyncStorage.setItem("steamId", input)
+      await addAccount(input)
       router.replace("/(tabs)/home")
       return
     }
@@ -37,7 +37,7 @@ export default function Login() {
       const data: any = await request(API_URL, searchPlayers, { name: input })
       const found = data?.player
       if (found?.id) {
-        await AsyncStorage.setItem("steamId", String(found.id))
+        await addAccount(String(found.id))
         router.replace("/(tabs)/home")
       } else {
         setError("Unable to find player. Please try again.")

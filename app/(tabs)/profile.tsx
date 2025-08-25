@@ -1,5 +1,4 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
@@ -7,6 +6,7 @@ import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, 
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
 import { playerProfile } from "../../graphql/documents"
+import { getActiveSteamId, removeAccount } from "../../utils/accounts"
 
 const API_URL = config.API_URL
 
@@ -18,14 +18,14 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null)
 
   const handleLogout = async () => {
-    await AsyncStorage.clear()
+    // remove only the active account
+    const id = await getActiveSteamId()
+    if (id) await removeAccount(id)
     router.replace("../login")
   }
 
   useEffect(() => {
-    AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id)
-    })
+    getActiveSteamId().then((id) => setSteamId(id))
   }, [])
 
   useEffect(() => {

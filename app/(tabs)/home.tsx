@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
@@ -10,6 +9,7 @@ import dayjs from "dayjs"
 import advancedFormat from "dayjs/plugin/advancedFormat"
 import utc from "dayjs/plugin/utc"
 import config from "../../config"
+import { getActiveSteamId } from "../../utils/accounts"
 dayjs.extend(utc)
 dayjs.extend(advancedFormat)
 const API_URL = config.API_URL
@@ -23,9 +23,7 @@ export default function Home() {
 
   // Get steamId from storage
   useEffect(() => {
-    AsyncStorage.getItem("steamId").then((id) => {
-      setSteamId(id)
-    })
+    getActiveSteamId().then((id) => setSteamId(id))
   }, [])
 
   // Fetch achievements for the selected date
