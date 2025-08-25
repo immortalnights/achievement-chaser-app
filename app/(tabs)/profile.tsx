@@ -5,28 +5,28 @@ import React, { useEffect, useState } from "react"
 import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
+import { useAccount } from "../../context/AccountContext"
 import { playerProfile } from "../../graphql/documents"
-import { getActiveSteamId, removeAccount } from "../../utils/accounts"
+// use account context instead of utils
 
 const API_URL = config.API_URL
 
 export default function Profile() {
   const router = useRouter()
+  const { activeSteamId, removeAccount } = useAccount()
   const [steamId, setSteamId] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const handleLogout = async () => {
-    // remove only the active account
-    const id = await getActiveSteamId()
-    if (id) await removeAccount(id)
+    if (activeSteamId) await removeAccount(activeSteamId)
     router.replace("../login")
   }
 
   useEffect(() => {
-    getActiveSteamId().then((id) => setSteamId(id))
-  }, [])
+    setSteamId(activeSteamId)
+  }, [activeSteamId])
 
   useEffect(() => {
     if (!steamId) return

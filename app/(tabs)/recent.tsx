@@ -7,8 +7,8 @@ import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native"
 import { GameListItem } from "../../components/GameListItem"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
+import { useAccount } from "../../context/AccountContext"
 import { playerGames } from "../../graphql/documents"
-import { getActiveSteamId } from "../../utils/accounts"
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
 
@@ -19,9 +19,10 @@ export default function Recent() {
   const [games, setGames] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  const { activeSteamId } = useAccount()
   useEffect(() => {
-    getActiveSteamId().then((id) => setSteamId(id))
-  }, [])
+    setSteamId(activeSteamId)
+  }, [activeSteamId])
 
   useEffect(() => {
     if (!steamId) return

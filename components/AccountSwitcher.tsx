@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import { addAccount, getAccounts, getActiveSteamId, removeAccount, setActiveSteamId } from "../utils/accounts"
+import { useAccount } from "../context/AccountContext"
 
 type Props = {
   visible: boolean
@@ -9,23 +9,18 @@ type Props = {
 }
 
 export default function AccountSwitcher({ visible, onClose, onChanged }: Props) {
-  const [accounts, setAccounts] = useState<string[]>([])
-  const [active, setActive] = useState<string | null>(null)
+  const { accounts, activeSteamId, addAccount, removeAccount, setActive, refresh: refreshAccounts } = useAccount()
   const [newId, setNewId] = useState("")
 
-  const refresh = async () => {
-    const [list, act] = await Promise.all([getAccounts(), getActiveSteamId()])
-    setAccounts(list)
-    setActive(act)
-  }
-
   useEffect(() => {
-    if (visible) refresh()
-  }, [visible])
+    if (visible) {
+      // ensure latest accounts when opening
+      refreshAccounts()
+    }
+  }, [visible, refreshAccounts])
 
   const handleSwitch = async (id: string) => {
-    await setActiveSteamId(id)
-    setActive(id)
+    await setActive(id)
     onChanged && onChanged()
     onClose()
   }
@@ -35,13 +30,11 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
     if (!id) return
     await addAccount(id)
     setNewId("")
-    await refresh()
     onChanged && onChanged()
   }
 
   const handleRemove = async (id: string) => {
     await removeAccount(id)
-    await refresh()
     onChanged && onChanged()
   }
 
@@ -56,7 +49,7 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
             renderItem={({ item }) => (
               <View style={styles.row}>
                 <TouchableOpacity style={styles.rowLeft} onPress={() => handleSwitch(item)}>
-                  <Text style={[styles.rowText, item === active && styles.active]}>{item}</Text>
+                  <Text style={[styles.rowText, item === activeSteamId && styles.active]}>{item}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleRemove(item)}>
                   <Text style={styles.remove}>Remove</Text>

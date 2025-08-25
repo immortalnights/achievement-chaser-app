@@ -9,7 +9,7 @@ import dayjs from "dayjs"
 import advancedFormat from "dayjs/plugin/advancedFormat"
 import utc from "dayjs/plugin/utc"
 import config from "../../config"
-import { getActiveSteamId } from "../../utils/accounts"
+import { useAccount } from "../../context/AccountContext"
 dayjs.extend(utc)
 dayjs.extend(advancedFormat)
 const API_URL = config.API_URL
@@ -22,9 +22,11 @@ export default function Home() {
   const [date, setDate] = useState(dayjs())
 
   // Get steamId from storage
+  const { activeSteamId } = useAccount()
+
   useEffect(() => {
-    getActiveSteamId().then((id) => setSteamId(id))
-  }, [])
+    setSteamId(activeSteamId)
+  }, [activeSteamId])
 
   // Fetch achievements for the selected date
   useEffect(() => {
