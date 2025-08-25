@@ -74,19 +74,21 @@ const HomeScreen = () => {
       </View>
       {loading ? (
         <View style={styles.skeletonContainer}>
-          <View style={styles.skeletonIcon} />
-          <View style={styles.skeletonTitle} />
-          <View style={styles.skeletonDescLine} />
-          <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
-          <View style={styles.skeletonDescPad} />
-          {/* Reserve space similar to info spacer between text and row */}
-          <View style={styles.skeletonInfoSpacer} />
-          {/* Placeholder row to reserve space for achievement thumbnails */}
-          <View style={styles.skeletonAchRow}>
-            <View style={styles.skeletonMiniIcon} />
-            <View style={styles.skeletonMiniIcon} />
-            <View style={styles.skeletonMiniIcon} />
-            <View style={styles.skeletonMiniIcon} />
+          <View style={[styles.skeletonCard, styles.skeletonCardMin]}>
+            <View style={styles.skeletonIcon} />
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonDescLine} />
+            <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
+            <View style={styles.skeletonDescPad} />
+            {/* Reserve space similar to info spacer between text and row */}
+            <View style={styles.skeletonInfoSpacer} />
+            {/* Placeholder row to reserve space for achievement thumbnails */}
+            <View style={styles.skeletonAchRow}>
+              <View style={styles.skeletonMiniIcon} />
+              <View style={styles.skeletonMiniIcon} />
+              <View style={styles.skeletonMiniIcon} />
+              <View style={styles.skeletonMiniIcon} />
+            </View>
           </View>
         </View>
       ) : (
@@ -98,6 +100,7 @@ const HomeScreen = () => {
           onNextDay={() => setDate((prev: any) => prev.add(1, "day"))}
           canGoNext={!date.isSame(dayjs(), "day")}
           steamId={steamId}
+          isToday={date.isSame(dayjs(), "day")}
         />
       )}
     </ScreenContainer>
@@ -129,6 +132,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
+  skeletonCard: {
+    width: "100%",
+    maxWidth: 600,
+    alignSelf: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  skeletonCardMin: {
+    minHeight: 420,
+  },
   skeletonTitle: {
     width: "70%",
     height: 24,
@@ -144,12 +162,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#444",
     marginBottom: 24,
-  // Subtle shadow to mimic primary icon shadow
-  shadowColor: "#000",
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 6,
+    // Subtle shadow to mimic primary icon shadow
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
   },
   skeletonDescLine: {
     width: "85%",
@@ -172,6 +190,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexWrap: "wrap",
+    width: "100%",
     marginBottom: 8,
   },
   skeletonMiniIcon: {
@@ -183,12 +202,12 @@ const styles = StyleSheet.create({
     borderColor: "#444",
     marginHorizontal: 8,
     marginBottom: 8,
-  // Light shadow to mimic mini icon shadow
-  shadowColor: "#000",
-  shadowOpacity: 0.12,
-  shadowRadius: 4,
-  shadowOffset: { width: 0, height: 2 },
-  elevation: 4,
+    // Light shadow to mimic mini icon shadow
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
 })
 

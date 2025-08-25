@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import type { GestureResponderEvent, PanResponderGestureState } from "react-native"
-import { Animated, Image, Linking, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Image, Linking, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export type Achievement = {
   id: string
@@ -20,6 +20,7 @@ type Props = {
   onNextDay?: () => void
   canGoNext?: boolean
   steamId?: string | null
+  isToday?: boolean
 }
 
 const AchievementDisplay: React.FC<Props> = ({
@@ -30,18 +31,9 @@ const AchievementDisplay: React.FC<Props> = ({
   onNextDay,
   canGoNext = false,
   steamId,
+  isToday = true,
 }) => {
-  const fadeAnim = useRef(new Animated.Value(1)).current
-
-  // Animate fade on date change
-  useEffect(() => {
-    fadeAnim.setValue(0)
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 350,
-      useNativeDriver: true,
-    }).start()
-  }, [achievements, fadeAnim])
+  // No animation: keep layout stable without fades
 
   // Keyboard navigation for web/PC
   useEffect(() => {
@@ -78,67 +70,27 @@ const AchievementDisplay: React.FC<Props> = ({
 
   if (achievements.length === 0) {
     return (
-      <Animated.View
-        style={[styles.emptyContainer, { opacity: fadeAnim, userSelect: "none" }]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.card}>
-          {/* Date is shown in HomeScreen header */}
-          <Text style={styles.emptyText}>No achievements earned for this day!</Text>
-        </View>
-      </Animated.View>
-    )
-  }
-
-  if (achievements.length === 1) {
-    const achievement = achievements[0]
-    return (
-      <Animated.View
-        style={[styles.singleContainer, { opacity: fadeAnim, userSelect: "none" }]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.card}>
-          {/* Date is shown in HomeScreen header */}
-          <View style={[styles.singleIconContainer, styles.shadowPrimary]}>
-            <Image source={{ uri: achievement.iconUrl }} style={styles.singleIcon} />
-          </View>
-          {!!achievement.gameName && (
-            <Text
-              style={styles.gameTitle}
-              accessibilityRole="link"
-              onPress={() => {
-                if (achievement.gameId && steamId) {
-                  const isNumeric = /^\d+$/.test(String(steamId))
-                  const base = isNumeric ? "https://steamcommunity.com/profiles" : "https://steamcommunity.com/id"
-                  const url = `${base}/${steamId}/stats/${achievement.gameId}/achievements`
-                  Linking.openURL(url).catch(() => {})
-                }
-              }}
-            >
-              {achievement.gameName}
+      <View style={styles.emptyContainer}>
+        <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
+          <View style={styles.cardInnerCenter}>
+            {/* Date is shown in HomeScreen header */}
+            <Text style={styles.emptyText}>
+              {isToday ? "No achievements earned yet today." : "No achievements were earned on this day."}
             </Text>
-          )}
-          <Text style={styles.name}>{achievement.name}</Text>
-          <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
-            {achievement.description}
-          </Text>
-          <View style={styles.infoSpacer} />
-          {/* Preserve space where the bottom row would be */}
-          <View style={[styles.achRow, styles.bottomRowSpacer]} />
+          </View>
         </View>
-      </Animated.View>
+      </View>
     )
   }
 
-  // Multiple achievements: show primary, and a single row below with all achievements (non-selected dimmed)
-  const primary = achievements[primaryIdx]
+  // Single unified rendering for 1+ achievements.
+  // Clamp primary index to avoid out-of-range on data changes.
+  const safeIdx = Math.min(Math.max(primaryIdx, 0), achievements.length - 1)
+  const primary = achievements[safeIdx]
 
   return (
-    <Animated.View
-      style={[styles.multiContainer, { opacity: fadeAnim, userSelect: "none" }]}
-      {...panResponder.panHandlers}
-    >
-      <View style={styles.card}>
+    <View style={styles.multiContainer}>
+      <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
         {/* Date is shown in HomeScreen header */}
         {/* Primary achievement row */}
         <View style={styles.firstRow}>
@@ -168,46 +120,61 @@ const AchievementDisplay: React.FC<Props> = ({
             {primary.description}
           </Text>
         </View>
-        <View style={styles.infoSpacer} />
-        {/* All achievements in one row; dim non-selected */}
-        <View style={styles.achRow}>
-          {achievements.map((ach: Achievement, idx: number) => (
-            <TouchableOpacity
-              key={ach.id}
-              style={styles.multiItem}
-              onPress={() => onSelectAchievement && onSelectAchievement(idx)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.iconFrame}>
-                <Image
-                  source={{ uri: ach.iconUrl }}
-                  style={[
-                    styles.multiIcon,
-                    {
-                      opacity: idx === primaryIdx ? 1 : 0.4,
-                      borderColor: idx === primaryIdx ? "#1976d2" : "#444",
-                      borderWidth: idx === primaryIdx ? 2 : 1,
-                    },
-                  ]}
-                />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {achievements.length > 1 && (
+          <>
+            <View style={styles.infoSpacer} />
+            {/* All achievements in one row; dim non-selected */}
+            <View style={styles.achRow}>
+              {achievements.map((ach: Achievement, idx: number) => (
+                <TouchableOpacity
+                  key={ach.id}
+                  style={styles.multiItem}
+                  onPress={() => onSelectAchievement && onSelectAchievement(idx)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.iconFrame}>
+                    <Image
+                      source={{ uri: ach.iconUrl }}
+                      style={[
+                        styles.multiIcon,
+                        {
+                          opacity: idx === safeIdx ? 1 : 0.4,
+                          borderColor: idx === safeIdx ? "#1976d2" : "#444",
+                          borderWidth: idx === safeIdx ? 2 : 1,
+                        },
+                      ]}
+                    />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
       </View>
-    </Animated.View>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   card: {
     width: "100%",
+    maxWidth: 600,
+    alignSelf: "center",
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
     padding: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 4,
+  },
+  cardMin: {
+    minHeight: 420,
+  },
+  cardInnerCenter: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   date: {
     fontSize: 18,
@@ -252,7 +219,7 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 16,
     backgroundColor: "#eee",
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#444",
   },
   singleIconContainer: {
@@ -311,13 +278,13 @@ const styles = StyleSheet.create({
     height: 64,
     justifyContent: "center",
     alignItems: "center",
-  borderRadius: 12,
-  // Subtle shadow for mini icons
-  shadowColor: "#000",
-  shadowOpacity: 0.15,
-  shadowRadius: 4,
-  shadowOffset: { width: 0, height: 2 },
-  elevation: 4,
+    borderRadius: 12,
+    // Subtle shadow for mini icons
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   multiInfo: {
     marginTop: 16,

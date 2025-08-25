@@ -86,7 +86,11 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
 
   return (
     <ScreenContainer style={styles.containerInner}>
-      <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
+      <View style={styles.avatarShadow}>
+        <View style={styles.avatarClip}>
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
+        </View>
+      </View>
       <TouchableOpacity onPress={() => Linking.openURL(profileUrl)}>
         <Text style={styles.displayName}>{displayName}</Text>
       </TouchableOpacity>
@@ -147,10 +151,28 @@ const styles = StyleSheet.create({
     paddingTop: 32,
   },
   avatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 16,
+    backgroundColor: "#eee",
+  },
+  avatarShadow: {
     width: 200,
     height: 200,
-    borderRadius: 100,
+    borderRadius: 16,
     marginBottom: 16,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+  },
+  avatarClip: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
     backgroundColor: "#eee",
   },
   displayName: {
