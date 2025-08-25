@@ -16,6 +16,42 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const handleSubmit = async () => {
+    if (submitting) return
+    const input = steamId.trim()
+    if (!input) {
+      setError("Please enter a username or ID.")
+      return
+    }
+    setError(null)
+    // If numeric, treat as SteamID directly
+    if (/^\d+$/.test(input)) {
+      onSubmit(input)
+      return
+    }
+    // Otherwise try to resolve via searchPlayers
+    try {
+      setSubmitting(true)
+      const data: any = await request(API_URL, searchPlayers, { name: input })
+      const found = data?.player
+      if (found?.id) {
+        onSubmit(String(found.id))
+      } else {
+        setError("Unable to find player. Please try again.")
+      }
+    } catch (e: any) {
+      // Distinguish between GraphQL response errors (request succeeded but API returned errors)
+      // and network/request failures (fetch failed, timeouts, etc.)
+      if (e instanceof ClientError || (e && e.response && e.response.errors)) {
+        setError("Unable to find player. Please try again.")
+      } else {
+        setError("Request failed. Please try again.")
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <ScreenContainer style={styles.centered}>
       <Text style={styles.title}>Enter your Steam Username or ID</Text>
@@ -30,6 +66,9 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
           }}
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="done"
+          blurOnSubmit
+          onSubmitEditing={handleSubmit}
         />
       </View>
       <View style={styles.errorSlot}>{error ? <Text style={styles.errorText}>{error}</Text> : null}</View>
@@ -38,40 +77,7 @@ const SteamLoginScreen: React.FC<Props> = ({ onSubmit }) => {
           accessibilityRole="button"
           style={[styles.btn, submitting && styles.btnDisabled]}
           disabled={submitting}
-          onPress={async () => {
-            const input = steamId.trim()
-            if (!input) {
-              setError("Please enter a username or ID.")
-              return
-            }
-            setError(null)
-            // If numeric, treat as SteamID directly
-            if (/^\d+$/.test(input)) {
-              onSubmit(input)
-              return
-            }
-            // Otherwise try to resolve via searchPlayers
-            try {
-              setSubmitting(true)
-              const data: any = await request(API_URL, searchPlayers, { name: input })
-              const found = data?.player
-              if (found?.id) {
-                onSubmit(String(found.id))
-              } else {
-                setError("Unable to find player. Please try again.")
-              }
-            } catch (e: any) {
-              // Distinguish between GraphQL response errors (request succeeded but API returned errors)
-              // and network/request failures (fetch failed, timeouts, etc.)
-              if (e instanceof ClientError || (e && e.response && e.response.errors)) {
-                setError("Unable to find player. Please try again.")
-              } else {
-                setError("Request failed. Please try again.")
-              }
-            } finally {
-              setSubmitting(false)
-            }
-          }}
+          onPress={handleSubmit}
         >
           {submitting ? (
             <View style={styles.btnContent}>
