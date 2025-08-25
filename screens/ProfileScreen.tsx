@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
 import { playerProfile } from "../graphql/documents"
 
@@ -38,31 +39,31 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <ScreenContainer style={styles.containerInner}>
         <ActivityIndicator size="large" />
-      </View>
+      </ScreenContainer>
     )
   }
 
   if (error) {
     return (
-      <View style={styles.container}>
+      <ScreenContainer style={styles.containerInner}>
         <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
         <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
-      </View>
+      </ScreenContainer>
     )
   }
 
   if (!profile) {
     return (
-      <View style={styles.container}>
+      <ScreenContainer style={styles.containerInner}>
         <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
         <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
-      </View>
+      </ScreenContainer>
     )
   }
 
@@ -84,7 +85,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
   const achievementsPct = achievementsTotal ? ((unlockedAchievements / achievementsTotal) * 100).toFixed(2) : "0.00"
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer style={styles.containerInner}>
       <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
       <TouchableOpacity onPress={() => Linking.openURL(profileUrl)}>
         <Text style={styles.displayName}>{displayName}</Text>
@@ -130,7 +131,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
       <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
         <Text style={styles.logoutText}>Log out</Text>
       </TouchableOpacity>
-    </View>
+    </ScreenContainer>
   )
 }
 
@@ -140,6 +141,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 32,
     backgroundColor: "#fff",
+  },
+  containerInner: {
+    alignItems: "center",
+    paddingTop: 32,
   },
   avatar: {
     width: 200,

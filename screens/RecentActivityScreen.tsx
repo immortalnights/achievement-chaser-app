@@ -6,6 +6,7 @@ import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native"
 import { GameListItem } from "../components/GameListItem"
+import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
 import { playerGames } from "../graphql/documents"
 dayjs.extend(relativeTime)
@@ -55,7 +56,7 @@ const RecentActivityScreen = () => {
   }, [steamId])
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Recent Activity</Text>
       </View>
@@ -71,7 +72,7 @@ const RecentActivityScreen = () => {
           contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 12, paddingTop: 16 }}
         />
       )}
-    </View>
+    </ScreenContainer>
   )
 }
 

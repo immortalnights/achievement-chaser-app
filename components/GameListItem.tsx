@@ -184,7 +184,11 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                 ]}
               >
                 {recent.slice(0, desiredCount).map((a) => (
-                  <Image key={a.id} source={{ uri: a.iconUrl }} style={[localStyles.achIcon, { marginLeft: 0, marginHorizontal: 5, marginBottom: 8 }]} />
+                  <Image
+                    key={a.id}
+                    source={{ uri: a.iconUrl }}
+                    style={[localStyles.achIcon, { marginLeft: 0, marginHorizontal: 5, marginBottom: 8 }]}
+                  />
                 ))}
               </View>
             </View>
@@ -204,7 +208,11 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
               <View
                 style={[
                   localStyles.recentAchRow,
-                  { minWidth: 32 * desiredCount + 8 * (desiredCount - 1), justifyContent: "space-around", flexWrap: "wrap" },
+                  {
+                    minWidth: 32 * desiredCount + 8 * (desiredCount - 1),
+                    justifyContent: "space-around",
+                    flexWrap: "wrap",
+                  },
                 ]}
               >
                 {recent.slice(0, desiredCount).map((a) => (

@@ -3,6 +3,7 @@ import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../components/AchievementDisplay"
+import ScreenContainer from "../components/ScreenContainer"
 import { playerUnlockedAchievements } from "../graphql/documents"
 
 import dayjs from "dayjs"
@@ -66,7 +67,7 @@ const HomeScreen = () => {
 
   // Pass date and setDate to AchievementDisplay for navigation
   return (
-    <View style={styles.container}>
+    <ScreenContainer>
       {/* Header date (slightly toned down) */}
       <View style={styles.header}>
         <Text style={styles.headerDate}>{date.format("dddd, D MMMM")}</Text>
@@ -99,7 +100,7 @@ const HomeScreen = () => {
           steamId={steamId}
         />
       )}
-    </View>
+    </ScreenContainer>
   )
 }
 
