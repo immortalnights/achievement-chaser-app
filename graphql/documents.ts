@@ -14,6 +14,15 @@ import { gql } from "graphql-request"
 // `;
 
 // Add your GraphQL documents below
+export const searchPlayers = gql`
+  query Search($name: String!) {
+    player(name: $name) {
+      id
+      name
+      avatarMediumUrl
+    }
+  }
+`
 
 export const playerProfile = gql`
   query PlayerProfile($player: BigInt!) {

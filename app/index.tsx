@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { View, ActivityIndicator } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import SteamLoginScreen from "../components/SteamLoginScreen"
+import SteamLoginScreen from "../screens/SteamLoginScreen"
 import MainTabs from "../navigation/MainTabs"
 
 export default function Index() {
