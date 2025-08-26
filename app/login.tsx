@@ -4,8 +4,8 @@ import React, { useState } from "react"
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
-import { searchPlayers } from "../graphql/documents"
 import { useAccount } from "../context/AccountContext"
+import { searchPlayers } from "../graphql/documents"
 
 export default function Login() {
   const router = useRouter()

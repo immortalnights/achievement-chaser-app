@@ -4,8 +4,8 @@ import { request } from "graphql-request"
 import React, { useEffect, useState } from "react"
 import { Image, Platform, Pressable } from "react-native"
 import AccountSwitcher from "../../components/AccountSwitcher"
-import { useAccount } from "../../context/AccountContext"
 import config from "../../config"
+import { useAccount } from "../../context/AccountContext"
 import { playerProfile } from "../../graphql/documents"
 
 export default function TabsLayout() {
@@ -83,7 +83,7 @@ export default function TabsLayout() {
           name="profile"
           options={{
             title: Platform.OS === "web" ? activeName || "Profile" : "Profile",
-            tabBarLabel: Platform.OS === "web" ? (activeName || "Profile") : (() => null),
+            tabBarLabel: Platform.OS === "web" ? activeName || "Profile" : () => null,
             tabBarIcon: ({ color, size }) =>
               avatarUrl ? (
                 <Image
