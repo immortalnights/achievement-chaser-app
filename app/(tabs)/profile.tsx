@@ -13,20 +13,22 @@ const API_URL = config.API_URL
 
 export default function Profile() {
   const router = useRouter()
-  const { activeSteamId, removeAccount } = useAccount()
+  const { activeSteamId, loading: accountsLoading } = useAccount()
   const [steamId, setSteamId] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const handleLogout = async () => {
-    if (activeSteamId) await removeAccount(activeSteamId)
-    router.replace("../login")
-  }
-
   useEffect(() => {
     setSteamId(activeSteamId)
   }, [activeSteamId])
+
+  // If there are no accounts left, return to login
+  useEffect(() => {
+    if (!accountsLoading && !activeSteamId) {
+      router.replace("../login")
+    }
+  }, [accountsLoading, activeSteamId, router])
 
   useEffect(() => {
     if (!steamId) return
@@ -55,9 +57,6 @@ export default function Profile() {
     return (
       <ScreenContainer style={styles.containerInner}>
         <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log out</Text>
-        </TouchableOpacity>
       </ScreenContainer>
     )
   }
@@ -66,9 +65,6 @@ export default function Profile() {
     return (
       <ScreenContainer style={styles.containerInner}>
         <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log out</Text>
-        </TouchableOpacity>
       </ScreenContainer>
     )
   }
@@ -136,9 +132,6 @@ export default function Profile() {
           </Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Log out</Text>
-      </TouchableOpacity>
     </ScreenContainer>
   )
 }
@@ -200,17 +193,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1976d2",
   },
-  logoutBtn: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "#eee",
-    borderRadius: 8,
-  },
-  logoutText: {
-    color: "#333",
-    fontSize: 16,
-  },
+  // removed logout styles as logout is no longer part of the flow
 })

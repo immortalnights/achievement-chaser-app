@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
   addAccount as addAccountUtil,
   getAccounts as getAccountsUtil,
@@ -25,7 +25,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const [activeSteamId, setActiveSteamIdState] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const [list, active] = await Promise.all([getAccountsUtil(), getActiveSteamIdUtil()])
@@ -34,12 +34,36 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     load()
     // no subscription needed; consumers call provided methods that refresh state
-  }, [])
+  }, [load])
+
+  const setActiveCb = useCallback(
+    async (id: string) => {
+      await setActiveSteamIdUtil(id)
+      await load()
+    },
+    [load]
+  )
+
+  const addAccountCb = useCallback(
+    async (id: string, name?: string) => {
+      await addAccountUtil(id, name)
+      await load()
+    },
+    [load]
+  )
+
+  const removeAccountCb = useCallback(
+    async (id: string) => {
+      await removeAccountUtil(id)
+      await load()
+    },
+    [load]
+  )
 
   const value = useMemo<AccountContextValue>(
     () => ({
@@ -47,20 +71,11 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       activeSteamId,
       loading,
       refresh: load,
-      setActive: async (id: string) => {
-        await setActiveSteamIdUtil(id)
-        await load()
-      },
-      addAccount: async (id: string, name?: string) => {
-        await addAccountUtil(id, name)
-        await load()
-      },
-      removeAccount: async (id: string) => {
-        await removeAccountUtil(id)
-        await load()
-      },
+      setActive: setActiveCb,
+      addAccount: addAccountCb,
+      removeAccount: removeAccountCb,
     }),
-    [accounts, activeSteamId, loading]
+    [accounts, activeSteamId, loading, load, setActiveCb, addAccountCb, removeAccountCb]
   )
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>

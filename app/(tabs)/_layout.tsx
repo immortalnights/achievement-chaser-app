@@ -1,20 +1,63 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
-import { Tabs, usePathname } from "expo-router"
-import React, { useState } from "react"
-import { Pressable } from "react-native"
+import { Tabs, usePathname, useRouter } from "expo-router"
+import { request } from "graphql-request"
+import React, { useEffect, useState } from "react"
+import { Image, Platform, Pressable } from "react-native"
 import AccountSwitcher from "../../components/AccountSwitcher"
+import { useAccount } from "../../context/AccountContext"
+import config from "../../config"
+import { playerProfile } from "../../graphql/documents"
 
 export default function TabsLayout() {
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { activeSteamId, loading } = useAccount()
+  const { accounts } = useAccount()
+  const activeName = accounts.find((a) => a.id === activeSteamId)?.name
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const API_URL = config.API_URL
   // Close switcher on tab route change
-  React.useEffect(() => {
+  useEffect(() => {
     setSwitcherOpen(false)
   }, [pathname])
 
+  // If there is no active account (after removals), send user to login
+  useEffect(() => {
+    if (!loading && !activeSteamId) {
+      router.replace("/login")
+    }
+  }, [loading, activeSteamId, router])
+
+  // Fetch avatar for active account to display in the Profile tab icon
+  useEffect(() => {
+    if (!activeSteamId) {
+      setAvatarUrl(null)
+      return
+    }
+    let cancelled = false
+    request(API_URL, playerProfile, { player: activeSteamId })
+      .then((data: any) => {
+        if (cancelled) return
+        const url = data?.player?.avatarLargeUrl || null
+        setAvatarUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setAvatarUrl(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [API_URL, activeSteamId])
+
   return (
     <>
-      <Tabs screenOptions={{ headerShown: true }}>
+      <Tabs
+        screenOptions={{
+          headerShown: true,
+          tabBarShowLabel: Platform.OS === "web",
+        }}
+      >
         <Tabs.Screen
           name="home"
           options={{
@@ -39,8 +82,18 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
-            tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+            title: Platform.OS === "web" ? activeName || "Profile" : "Profile",
+            tabBarLabel: Platform.OS === "web" ? (activeName || "Profile") : (() => null),
+            tabBarIcon: ({ color, size }) =>
+              avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={{ width: size, height: size, borderRadius: 6 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="person" size={size} color={color} />
+              ),
             // Long press profile tab to open account switcher
             tabBarButton: (props) => (
               <Pressable

@@ -5,10 +5,11 @@ import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View 
 import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
 import { searchPlayers } from "../graphql/documents"
-import { addAccount } from "../utils/accounts"
+import { useAccount } from "../context/AccountContext"
 
 export default function Login() {
   const router = useRouter()
+  const { addAccount } = useAccount()
   const [steamId, setSteamId] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,20 +25,13 @@ export default function Login() {
     }
     setError(null)
 
-    // Numeric input: treat as SteamID directly
-    if (/^\d+$/.test(input)) {
-      await addAccount(input)
-      router.replace("/(tabs)/home")
-      return
-    }
-
-    // Otherwise resolve vanity/username via searchPlayers
+    // Resolve via searchPlayers for both vanity and numeric to ensure we get a friendly name
     try {
       setSubmitting(true)
       const data: any = await request(API_URL, searchPlayers, { name: input })
       const found = data?.player
       if (found?.id) {
-        await addAccount(String(found.id))
+        await addAccount(String(found.id), found.name || String(found.id))
         router.replace("/(tabs)/home")
       } else {
         setError("Unable to find player. Please try again.")

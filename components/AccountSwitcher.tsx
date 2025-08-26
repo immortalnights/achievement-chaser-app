@@ -1,5 +1,5 @@
 import { ClientError, request } from "graphql-request"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import config from "../config"
 import { useAccount } from "../context/AccountContext"
@@ -17,20 +17,25 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
   const [error, setError] = useState<string | null>(null)
   const API_URL = config.API_URL
 
+  const wasVisible = useRef(false)
   useEffect(() => {
-    if (visible) {
-      // ensure latest accounts when opening
+    if (visible && !wasVisible.current) {
+      // ensure latest accounts when opening (only on transition to visible)
       refreshAccounts()
     }
+    wasVisible.current = visible
   }, [visible, refreshAccounts])
 
-  const handleSwitch = async (id: string) => {
-    await setActive(id)
-    onChanged && onChanged()
-    onClose()
-  }
+  const handleSwitch = useCallback(
+    async (id: string) => {
+      await setActive(id)
+      onChanged && onChanged()
+      onClose()
+    },
+    [setActive, onChanged, onClose]
+  )
 
-  const handleAdd = async () => {
+  const handleAdd = useCallback(async () => {
     const input = newId.trim()
     if (!input) return
     setError(null)
@@ -51,12 +56,15 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
         setError("Request failed. Please try again.")
       }
     }
-  }
+  }, [newId, API_URL, addAccount, onChanged])
 
-  const handleRemove = async (id: string) => {
-    await removeAccount(id)
-    onChanged && onChanged()
-  }
+  const handleRemove = useCallback(
+    async (id: string) => {
+      await removeAccount(id)
+      onChanged && onChanged()
+    },
+    [removeAccount, onChanged]
+  )
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -81,10 +89,13 @@ export default function AccountSwitcher({ visible, onClose, onChanged }: Props) 
           <View style={styles.addWrap}>
             <TextInput
               style={styles.input}
-              placeholder="Add Steam ID"
+              placeholder="Add Steam Username or ID"
               value={newId}
               onChangeText={setNewId}
               autoCapitalize="none"
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={handleAdd}
             />
             <TouchableOpacity style={styles.addBtn} onPress={handleAdd}>
               <Text style={styles.addBtnText}>Add</Text>
