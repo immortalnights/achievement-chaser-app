@@ -1,7 +1,7 @@
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker"
 import dayjs, { Dayjs } from "dayjs"
 import React, { useEffect, useState } from "react"
-import { Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { Modal, NativeModules, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 
 type Props = {
   visible: boolean
@@ -11,6 +11,8 @@ type Props = {
 }
 
 export default function SelectDateModal({ visible, initialDate, onCancel, onSubmit }: Props) {
+  // Use native picker only if the module is available at runtime
+  const hasNativePicker = Platform.OS !== "web" && !!(NativeModules as any)?.RNCDatePicker
   const [selected, setSelected] = useState<Dayjs>(initialDate)
   const [textFallback, setTextFallback] = useState<string>(initialDate.format("YYYY-MM-DD"))
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
   }
 
   const handleSubmit = () => {
-    if (Platform.OS === "web") {
+  if (Platform.OS === "web" || !hasNativePicker) {
       const parsed = dayjs(textFallback)
       if (!parsed.isValid()) {
         setError("Enter a valid date as YYYY-MM-DD")
@@ -51,7 +53,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Select a date</Text>
           <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
-          {Platform.OS === "web" ? (
+      {Platform.OS === "web" || !hasNativePicker ? (
             <TextInput
               value={textFallback}
               onChangeText={(t) => {
@@ -65,7 +67,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
             />
           ) : (
             <View style={styles.pickerWrap}>
-              <DateTimePicker
+        <DateTimePicker
                 mode="date"
                 value={selected.toDate()}
                 onChange={handleChange}
@@ -150,14 +152,14 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 8,
+  flexDirection: "row",
+  justifyContent: "flex-end",
   },
   modalBtn: {
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  marginLeft: 8,
   },
   modalBtnGhost: {
     backgroundColor: "transparent",

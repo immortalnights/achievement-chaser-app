@@ -242,7 +242,6 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
   },
   footerCol: {
     width: "100%",

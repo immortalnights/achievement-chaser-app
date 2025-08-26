@@ -191,9 +191,8 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   dateActionsRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 6,
+  flexDirection: "row",
+  marginTop: 6,
   },
   centerWrap: {
     flex: 1,
@@ -220,6 +219,7 @@ const styles = StyleSheet.create({
   linkBtn: {
     paddingHorizontal: 2,
     paddingVertical: 4,
+  marginLeft: 12,
   },
   linkBtnText: {
     color: "#2563eb",
