@@ -107,7 +107,7 @@ export default function Home() {
         {/* Date above the card, constrained to card width */}
         <View style={styles.dateContainer}>
           <Text style={styles.headerDate}>
-            {date.isSame(dayjs(), "day") ? `Today, ${date.format("dddd Do MMMM")}` : date.format("dddd Do MMMM")}
+            {date.isSame(dayjs(), "day") ? "Today" : date.format("dddd Do MMMM")}
           </Text>
         </View>
         {loading ? (
