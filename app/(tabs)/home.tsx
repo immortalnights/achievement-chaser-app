@@ -1,6 +1,6 @@
 import { request } from "graphql-request"
-import React, { useEffect, useState } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import React, { useEffect, useMemo, useState } from "react"
+import { PanResponder, StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../../components/AchievementDisplay"
 import ScreenContainer from "../../components/ScreenContainer"
 import { playerUnlockedAchievements } from "../../graphql/documents"
@@ -27,6 +27,40 @@ export default function Home() {
   useEffect(() => {
     setSteamId(activeSteamId)
   }, [activeSteamId])
+
+  // Global keyboard navigation (web)
+  useEffect(() => {
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "ArrowLeft") {
+          setDate((prev: any) => prev.subtract(1, "day"))
+        } else if (e.key === "ArrowRight") {
+          if (!date.isSame(dayjs(), "day")) setDate((prev: any) => prev.add(1, "day"))
+        }
+      }
+      window.addEventListener("keydown", handleKeyDown)
+      return () => window.removeEventListener("keydown", handleKeyDown)
+    }
+    return () => {}
+  }, [date])
+
+  // Global swipe navigation (native + web mouse)
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_evt, gestureState) => Math.abs(gestureState.dx) > 20,
+        onPanResponderRelease: (_evt, gestureState) => {
+          if (gestureState.dx < -50) {
+            // swipe left -> next day (if allowed)
+            setDate((prev: any) => (!prev.isSame(dayjs(), "day") ? prev.add(1, "day") : prev))
+          } else if (gestureState.dx > 50) {
+            // swipe right -> previous day
+            setDate((prev: any) => prev.subtract(1, "day"))
+          }
+        },
+      }),
+    []
+  )
 
   // Fetch achievements for the selected date
   useEffect(() => {
@@ -69,7 +103,7 @@ export default function Home() {
 
   return (
     <ScreenContainer>
-      <View style={styles.centerWrap}>
+      <View style={styles.centerWrap} {...panResponder.panHandlers}>
         {/* Date above the card, constrained to card width */}
         <View style={styles.dateContainer}>
           <Text style={styles.headerDate}>
@@ -100,9 +134,6 @@ export default function Home() {
             achievements={achievements}
             primaryIdx={primaryIdx}
             onSelectAchievement={handleSelectAchievement}
-            onPrevDay={() => setDate((prev: any) => prev.subtract(1, "day"))}
-            onNextDay={() => setDate((prev: any) => prev.add(1, "day"))}
-            canGoNext={!date.isSame(dayjs(), "day")}
             steamId={steamId}
             isToday={date.isSame(dayjs(), "day")}
           />

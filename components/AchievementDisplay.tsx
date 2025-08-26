@@ -1,6 +1,5 @@
-import React, { useEffect } from "react"
-import type { GestureResponderEvent, PanResponderGestureState } from "react-native"
-import { Image, Linking, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React from "react"
+import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 export type Achievement = {
   id: string
@@ -16,9 +15,6 @@ type Props = {
   achievements: Achievement[]
   primaryIdx?: number
   onSelectAchievement?: (idx: number) => void
-  onPrevDay?: () => void
-  onNextDay?: () => void
-  canGoNext?: boolean
   steamId?: string | null
   isToday?: boolean
 }
@@ -27,53 +23,19 @@ const AchievementDisplay: React.FC<Props> = ({
   achievements,
   primaryIdx = 0,
   onSelectAchievement,
-  onPrevDay,
-  onNextDay,
-  canGoNext = false,
   steamId,
   isToday = true,
 }) => {
   // No animation: keep layout stable without fades
 
-  // Keyboard navigation for web/PC
-  useEffect(() => {
-    // Only add keyboard event listeners in web environments
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "ArrowLeft") {
-          onPrevDay && onPrevDay()
-        } else if (e.key === "ArrowRight") {
-          if (canGoNext && onNextDay) onNextDay()
-        }
-      }
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
-    }
-    // No-op cleanup for native environments
-    return () => {}
-  }, [canGoNext, onPrevDay, onNextDay])
-
-  // PanResponder for swipe gestures
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_: GestureResponderEvent, gestureState: PanResponderGestureState) =>
-      Math.abs(gestureState.dx) > 20,
-    onPanResponderRelease: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      if (gestureState.dx < -50) {
-        // Swipe left: next day (respect canGoNext)
-        if (canGoNext && onNextDay) onNextDay()
-      } else if (gestureState.dx > 50) {
-        // Swipe right: previous day
-        onPrevDay && onPrevDay()
-      }
-    },
-  })
+  // Keyboard and swipe handling moved to parent (Home) so gestures work anywhere on the screen
 
   if (achievements.length === 0) {
     return (
       <View style={styles.inlineContainer}>
-        <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
+  <View style={[styles.card, styles.cardMin]}>
           <View style={styles.cardInnerCenter}>
-            <Text style={styles.emptyText}>
+            <Text style={styles.emptyText} selectable={false}>
               {isToday ? "No achievements earned yet today." : "No achievements were earned on this day."}
             </Text>
           </View>
@@ -89,7 +51,7 @@ const AchievementDisplay: React.FC<Props> = ({
 
   return (
     <View style={styles.inlineContainer}>
-      <View style={[styles.card, styles.cardMin]} {...panResponder.panHandlers}>
+  <View style={[styles.card, styles.cardMin]}>
         {/* Date is shown in HomeScreen header */}
         {/* Primary achievement row */}
         <View style={styles.firstRow}>
@@ -102,6 +64,7 @@ const AchievementDisplay: React.FC<Props> = ({
             <Text
               style={styles.gameTitle}
               accessibilityRole="link"
+              selectable={false}
               onPress={() => {
                 if (primary.gameId && steamId) {
                   const isNumeric = /^\d+$/.test(String(steamId))
@@ -114,8 +77,8 @@ const AchievementDisplay: React.FC<Props> = ({
               {primary.gameName}
             </Text>
           )}
-          <Text style={styles.name}>{primary.name}</Text>
-          <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+          <Text style={styles.name} selectable={false}>{primary.name}</Text>
+          <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail" selectable={false}>
             {primary.description}
           </Text>
         </View>
@@ -156,7 +119,7 @@ const AchievementDisplay: React.FC<Props> = ({
                       <View style={styles.multiItem}>
                         <View style={styles.iconFrame}>
                           <View style={[styles.multiIcon, styles.overflowInner]}> 
-                            <Text style={styles.overflowText}>{`+${overflow}`}</Text>
+                            <Text style={styles.overflowText} selectable={false}>{`+${overflow}`}</Text>
                           </View>
                         </View>
                       </View>
@@ -239,7 +202,7 @@ const styles = StyleSheet.create({
     borderColor: "#444",
   },
   singleIconContainer: {
-    marginBottom: 24,
+  marginBottom: 0,
     borderRadius: 16,
   },
   name: {
@@ -310,7 +273,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   multiInfo: {
-    marginTop: 16,
+  marginTop: 8,
     alignItems: "center",
   },
   // Stronger shadow for the primary icon
