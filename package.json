@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "eas build --platform android --profile production && eas submit --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
