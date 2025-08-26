@@ -1,6 +1,6 @@
 import { request } from "graphql-request"
-import React, { useEffect, useMemo, useState } from "react"
-import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { PanResponder, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../../components/AchievementDisplay"
 import ScreenContainer from "../../components/ScreenContainer"
 import SelectDateModal from "../../components/SelectDateModal"
@@ -22,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState(dayjs())
   const [showDateJump, setShowDateJump] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   // Get steamId from storage
   const { activeSteamId } = useAccount()
@@ -47,15 +48,18 @@ export default function Home() {
   }, [date])
 
   // Global swipe navigation (native + web mouse)
+  // Only activate for horizontal gestures so vertical pulls still trigger RefreshControl
   const panResponder = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_evt, gestureState) => Math.abs(gestureState.dx) > 20,
-        onPanResponderRelease: (_evt, gestureState) => {
-          if (gestureState.dx < -50) {
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_evt, g) => Math.abs(g.dx) > 16 && Math.abs(g.dx) > Math.abs(g.dy) + 6,
+        onMoveShouldSetPanResponderCapture: (_evt, g) => Math.abs(g.dx) > 16 && Math.abs(g.dx) > Math.abs(g.dy) + 6,
+        onPanResponderRelease: (_evt, g) => {
+          if (g.dx < -50) {
             // swipe left -> next day (if allowed)
             setDate((prev: any) => (!prev.isSame(dayjs(), "day") ? prev.add(1, "day") : prev))
-          } else if (gestureState.dx > 50) {
+          } else if (g.dx > 50) {
             // swipe right -> previous day
             setDate((prev: any) => prev.subtract(1, "day"))
           }
@@ -65,14 +69,13 @@ export default function Home() {
   )
 
   // Fetch achievements for the selected date
-  useEffect(() => {
+  const fetchForDate = useCallback((d: dayjs.Dayjs, opts?: { isRefresh?: boolean }) => {
     if (!steamId) return
-    setLoading(true)
-    // Set start and end of day in UTC
-    // Get local timezone offset in +HH:mm or -HH:mm format
-    const tzOffset = date.format("Z")
-    const startOfDay = date.hour(0).minute(0).second(0).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
-    const endOfDay = date.hour(23).minute(59).second(59).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
+    if (opts?.isRefresh) setRefreshing(true)
+    else setLoading(true)
+    const tzOffset = d.format("Z")
+    const startOfDay = d.hour(0).minute(0).second(0).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
+    const endOfDay = d.hour(23).minute(59).second(59).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
     request(API_URL, playerUnlockedAchievements, {
       player: steamId,
       range: [startOfDay, endOfDay],
@@ -90,12 +93,22 @@ export default function Home() {
           difficultyPercentage: edge.node.game?.difficultyPercentage,
         }))
         setAchievements(mapped)
-        // Reset focus to first achievement for the new date/data
         setPrimaryIdx(0)
-        setLoading(false)
       })
-      .catch(() => setLoading(false))
-  }, [steamId, date])
+      .finally(() => {
+        if (opts?.isRefresh) setRefreshing(false)
+        else setLoading(false)
+      })
+  }, [steamId])
+
+  useEffect(() => {
+    if (!steamId) return
+    fetchForDate(date)
+  }, [steamId, date, fetchForDate])
+
+  const onRefresh = () => {
+    fetchForDate(date, { isRefresh: true })
+  }
 
   // Handler to change the focused (primary) achievement
   const handleSelectAchievement = (idx: number) => {
@@ -115,10 +128,17 @@ export default function Home() {
 
   return (
     <ScreenContainer>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ flexGrow: 1 }}
+        directionalLockEnabled
+      >
       <View style={styles.centerWrap} {...panResponder.panHandlers}>
         {/* Date above the card, constrained to card width */}
         <View style={styles.dateContainer}>
-          <Text style={styles.headerDate}>{isToday ? "Today" : date.format("dddd Do MMMM")}</Text>
+          <Text style={styles.headerDate} selectable={false}>
+            {isToday ? "Today" : date.format("dddd Do MMMM")}
+          </Text>
         </View>
         {loading ? (
           <View style={styles.skeletonContainer}>
@@ -157,22 +177,23 @@ export default function Home() {
                   onPress={() => setDate(dayjs())}
                   style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}
                 >
-                  <Text style={styles.datePillText}>Today</Text>
+                  <Text style={styles.datePillText} selectable={false}>Today</Text>
                 </Pressable>
               )}
               <Pressable onPress={handleJumpOpen} style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}>
-                <Text style={styles.linkBtnText}>Select date</Text>
+                <Text style={styles.linkBtnText} selectable={false}>Select date</Text>
               </Pressable>
             </View>
           </View>
         </View>
-      </View>
-      <SelectDateModal
+  </View>
+  <SelectDateModal
         visible={showDateJump}
         initialDate={date}
         onCancel={handleJumpCancel}
         onSubmit={handleJumpSubmit}
       />
+  </ScrollView>
     </ScreenContainer>
   )
 }

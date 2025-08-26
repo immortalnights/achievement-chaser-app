@@ -1,8 +1,8 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { request } from "graphql-request"
-import React, { useEffect, useState } from "react"
-import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useCallback, useEffect, useState } from "react"
+import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
 import { useAccount } from "../../context/AccountContext"
@@ -18,6 +18,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     setSteamId(activeSteamId)
@@ -30,41 +31,60 @@ export default function Profile() {
     }
   }, [accountsLoading, activeSteamId, router])
 
-  useEffect(() => {
+  const fetchProfile = useCallback((opts?: { refresh?: boolean }) => {
     if (!steamId) return
-    setLoading(true)
+    if (opts?.refresh) setRefreshing(true)
+    else setLoading(true)
     setError(null)
     request(API_URL, playerProfile, { player: steamId })
       .then((data: any) => {
         setProfile(data.player)
-        setLoading(false)
       })
       .catch(() => {
-        setLoading(false)
         setError("Failed to load profile. Please try again later.")
+      })
+      .finally(() => {
+        if (opts?.refresh) setRefreshing(false)
+        else setLoading(false)
       })
   }, [steamId])
 
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
   if (loading) {
     return (
-      <ScreenContainer style={styles.containerInner}>
-        <ActivityIndicator size="large" />
+      <ScreenContainer>
+        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+          <View style={styles.containerInner}>
+            <ActivityIndicator size="large" />
+          </View>
+        </ScrollView>
       </ScreenContainer>
     )
   }
 
   if (error) {
     return (
-      <ScreenContainer style={styles.containerInner}>
-        <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
+      <ScreenContainer>
+        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+          <View style={styles.containerInner}>
+            <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
+          </View>
+        </ScrollView>
       </ScreenContainer>
     )
   }
 
   if (!profile) {
     return (
-      <ScreenContainer style={styles.containerInner}>
-        <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
+      <ScreenContainer>
+        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+          <View style={styles.containerInner}>
+            <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
+          </View>
+        </ScrollView>
       </ScreenContainer>
     )
   }
@@ -85,7 +105,9 @@ export default function Profile() {
   const achievementsPct = achievementsTotal ? ((unlockedAchievements / achievementsTotal) * 100).toFixed(2) : "0.00"
 
   return (
-    <ScreenContainer style={styles.containerInner}>
+    <ScreenContainer>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+        <View style={styles.containerInner}>
       <View style={styles.avatarShadow}>
         <View style={styles.avatarClip}>
           <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
@@ -132,6 +154,8 @@ export default function Profile() {
           </Text>
         </View>
       </View>
+        </View>
+      </ScrollView>
     </ScreenContainer>
   )
 }

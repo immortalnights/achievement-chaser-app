@@ -1,6 +1,6 @@
 import { request } from "graphql-request"
-import React, { useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native"
+import React, { useCallback, useEffect, useState } from "react"
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from "react-native"
 import { GameListItem } from "../../components/GameListItem"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
@@ -13,15 +13,17 @@ export default function WhatsNext() {
   const [steamId, setSteamId] = useState<string | null>(null)
   const [games, setGames] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
 
   const { activeSteamId } = useAccount()
   useEffect(() => {
     setSteamId(activeSteamId)
   }, [activeSteamId])
 
-  useEffect(() => {
+  const fetchGames = useCallback((opts?: { refresh?: boolean }) => {
     if (!steamId) return
-    setLoading(true)
+    if (opts?.refresh) setRefreshing(true)
+    else setLoading(true)
     request(API_URL, playerGames, {
       player: steamId,
       incomplete: true,
@@ -45,10 +47,17 @@ export default function WhatsNext() {
           }
         })
         setGames(nextGames)
-        setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .finally(() => {
+        if (opts?.refresh) setRefreshing(false)
+        else setLoading(false)
+      })
   }, [steamId])
+
+  useEffect(() => {
+    if (!steamId) return
+    fetchGames()
+  }, [steamId, fetchGames])
 
   return (
     <ScreenContainer>
@@ -62,6 +71,7 @@ export default function WhatsNext() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <GameListItem item={item} styles={styles} steamId={steamId} />}
           contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 12, paddingTop: 16 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchGames({ refresh: true })} />}
         />
       )}
     </ScreenContainer>
