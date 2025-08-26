@@ -1,0 +1,139 @@
+import React, { useEffect, useState } from "react"
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import dayjs, { Dayjs } from "dayjs"
+
+type Props = {
+  visible: boolean
+  initialDate: Dayjs
+  onCancel: () => void
+  onSubmit: (date: Dayjs) => void
+}
+
+export default function DateJumpModal({ visible, initialDate, onCancel, onSubmit }: Props) {
+  const [dateInput, setDateInput] = useState<string>(initialDate.format("YYYY-MM-DD"))
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (visible) {
+      setDateInput(initialDate.format("YYYY-MM-DD"))
+      setError(null)
+    }
+  }, [visible, initialDate])
+
+  const handleSubmit = () => {
+    const parsed = dayjs(dateInput)
+    if (!parsed.isValid()) {
+      setError("Enter a valid date as YYYY-MM-DD")
+      return
+    }
+    onSubmit(parsed)
+  }
+
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Go to date</Text>
+          <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
+          <TextInput
+            value={dateInput}
+            onChangeText={(t) => {
+              setDateInput(t)
+              if (error) setError(null)
+            }}
+            placeholder="YYYY-MM-DD"
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={styles.modalInput}
+          />
+          {!!error && <Text style={styles.modalError}>{error}</Text>}
+          <View style={styles.modalActions}>
+            <Pressable onPress={onCancel} style={({ pressed }) => [styles.modalBtn, styles.modalBtnGhost, pressed && styles.pressed]}>
+              <Text style={styles.modalBtnGhostText}>Cancel</Text>
+            </Pressable>
+            <Pressable onPress={handleSubmit} style={({ pressed }) => [styles.modalBtn, styles.modalBtnPrimary, pressed && styles.pressed]}>
+              <Text style={styles.modalBtnPrimaryText}>Go</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+
+const styles = StyleSheet.create({
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  modalHelp: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 16,
+    color: "#111827",
+  },
+  modalError: {
+    color: "#dc2626",
+    marginTop: 6,
+    textAlign: "center",
+  },
+  modalActions: {
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
+  },
+  modalBtn: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  modalBtnGhost: {
+    backgroundColor: "transparent",
+  },
+  modalBtnGhostText: {
+    color: "#374151",
+    fontWeight: "600",
+  },
+  modalBtnPrimary: {
+    backgroundColor: "#2563eb",
+  },
+  modalBtnPrimaryText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+  pressed: {
+    opacity: 0.8,
+  },
+})

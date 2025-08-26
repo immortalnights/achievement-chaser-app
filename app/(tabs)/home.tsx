@@ -1,8 +1,9 @@
 import { request } from "graphql-request"
 import React, { useEffect, useMemo, useState } from "react"
-import { PanResponder, StyleSheet, Text, View } from "react-native"
+import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../../components/AchievementDisplay"
 import ScreenContainer from "../../components/ScreenContainer"
+import DateJumpModal from "../../components/DateJumpModal"
 import { playerUnlockedAchievements } from "../../graphql/documents"
 
 import dayjs from "dayjs"
@@ -20,6 +21,7 @@ export default function Home() {
   const [primaryIdx, setPrimaryIdx] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState(dayjs())
+  const [showDateJump, setShowDateJump] = useState(false)
 
   // Get steamId from storage
   const { activeSteamId } = useAccount()
@@ -101,13 +103,23 @@ export default function Home() {
     setPrimaryIdx(idx)
   }
 
+  const isToday = date.isSame(dayjs(), "day")
+  const handleJumpOpen = () => {
+    setShowDateJump(true)
+  }
+  const handleJumpCancel = () => setShowDateJump(false)
+  const handleJumpSubmit = (d: dayjs.Dayjs) => {
+    setDate(d)
+    setShowDateJump(false)
+  }
+
   return (
     <ScreenContainer>
       <View style={styles.centerWrap} {...panResponder.panHandlers}>
         {/* Date above the card, constrained to card width */}
         <View style={styles.dateContainer}>
           <Text style={styles.headerDate}>
-            {date.isSame(dayjs(), "day") ? "Today" : date.format("dddd Do MMMM")}
+            {isToday ? "Today" : date.format("dddd Do MMMM")}
           </Text>
         </View>
         {loading ? (
@@ -138,7 +150,23 @@ export default function Home() {
             isToday={date.isSame(dayjs(), "day")}
           />
         )}
+        {/* Actions below the card, aligned right */}
+        <View style={styles.belowCardActionsOuter}>
+          <View style={styles.belowCardActionsInner}>
+            <View style={styles.dateActionsRow}>
+              {!isToday && (
+                <Pressable onPress={() => setDate(dayjs())} style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}>
+                  <Text style={styles.datePillText}>Today</Text>
+                </Pressable>
+              )}
+              <Pressable onPress={handleJumpOpen} style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}>
+                <Text style={styles.linkBtnText}>Jump to date</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
       </View>
+  <DateJumpModal visible={showDateJump} initialDate={date} onCancel={handleJumpCancel} onSubmit={handleJumpSubmit} />
     </ScreenContainer>
   )
 }
@@ -156,6 +184,11 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 6,
   },
+  dateActionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 6,
+  },
   centerWrap: {
     flex: 1,
     justifyContent: "center",
@@ -166,12 +199,48 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
   },
+  datePill: {
+    backgroundColor: "#e5f0ff",
+    borderColor: "#99b8ff",
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  datePillText: {
+    color: "#1d4ed8",
+    fontWeight: "600",
+  },
+  linkBtn: {
+    paddingHorizontal: 2,
+    paddingVertical: 4,
+  },
+  linkBtnText: {
+    color: "#2563eb",
+    textDecorationLine: "underline",
+  },
+  pressed: {
+    opacity: 0.8,
+  },
   skeletonContainer: {
     width: "100%",
     alignItems: "center",
     paddingHorizontal: 12,
     paddingTop: 0,
     paddingBottom: 0,
+  },
+  belowCardActionsOuter: {
+    width: "100%",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingTop: 6,
+    paddingBottom: 8,
+  },
+  belowCardActionsInner: {
+    width: "100%",
+    maxWidth: 600,
+    alignSelf: "center",
+    alignItems: "flex-end",
   },
   skeletonCard: {
     width: "100%",
