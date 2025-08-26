@@ -2,7 +2,17 @@ import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { request } from "graphql-request"
 import React, { useCallback, useEffect, useState } from "react"
-import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native"
 import ScreenContainer from "../../components/ScreenContainer"
 import config from "../../config"
 import { useAccount } from "../../context/AccountContext"
@@ -31,23 +41,26 @@ export default function Profile() {
     }
   }, [accountsLoading, activeSteamId, router])
 
-  const fetchProfile = useCallback((opts?: { refresh?: boolean }) => {
-    if (!steamId) return
-    if (opts?.refresh) setRefreshing(true)
-    else setLoading(true)
-    setError(null)
-    request(API_URL, playerProfile, { player: steamId })
-      .then((data: any) => {
-        setProfile(data.player)
-      })
-      .catch(() => {
-        setError("Failed to load profile. Please try again later.")
-      })
-      .finally(() => {
-        if (opts?.refresh) setRefreshing(false)
-        else setLoading(false)
-      })
-  }, [steamId])
+  const fetchProfile = useCallback(
+    (opts?: { refresh?: boolean }) => {
+      if (!steamId) return
+      if (opts?.refresh) setRefreshing(true)
+      else setLoading(true)
+      setError(null)
+      request(API_URL, playerProfile, { player: steamId })
+        .then((data: any) => {
+          setProfile(data.player)
+        })
+        .catch(() => {
+          setError("Failed to load profile. Please try again later.")
+        })
+        .finally(() => {
+          if (opts?.refresh) setRefreshing(false)
+          else setLoading(false)
+        })
+    },
+    [steamId]
+  )
 
   useEffect(() => {
     fetchProfile()
@@ -56,7 +69,9 @@ export default function Profile() {
   if (loading) {
     return (
       <ScreenContainer>
-        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}
+        >
           <View style={styles.containerInner}>
             <ActivityIndicator size="large" />
           </View>
@@ -68,7 +83,9 @@ export default function Profile() {
   if (error) {
     return (
       <ScreenContainer>
-        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}
+        >
           <View style={styles.containerInner}>
             <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>{error}</Text>
           </View>
@@ -80,7 +97,9 @@ export default function Profile() {
   if (!profile) {
     return (
       <ScreenContainer>
-        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}
+        >
           <View style={styles.containerInner}>
             <Text style={{ color: "#d32f2f", fontSize: 18, marginBottom: 16 }}>No profile data found.</Text>
           </View>
@@ -106,54 +125,56 @@ export default function Profile() {
 
   return (
     <ScreenContainer>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfile({ refresh: true })} />}
+      >
         <View style={styles.containerInner}>
-      <View style={styles.avatarShadow}>
-        <View style={styles.avatarClip}>
-          <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
-        </View>
-      </View>
-      <TouchableOpacity onPress={() => Linking.openURL(profileUrl)}>
-        <Text style={styles.displayName}>{displayName}</Text>
-      </TouchableOpacity>
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-        Total Games: <Text style={{ color: "#1976d2" }}>{ownedGames}</Text>
-      </Text>
-      <View style={styles.metaContainer}>
-        <View style={styles.metaRow}>
-          <MaterialIcons name="check-circle" size={22} color="#1976d2" style={styles.metaIcon} />
-          <Text style={styles.metaText}>
-            Games Played:{" "}
-            <Text style={styles.metaValue}>
-              {playedGames} ({gamesCompletedPct}%)
-            </Text>
+          <View style={styles.avatarShadow}>
+            <View style={styles.avatarClip}>
+              <Image source={{ uri: avatarUrl }} style={styles.avatar} resizeMode="cover" />
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => Linking.openURL(profileUrl)}>
+            <Text style={styles.displayName}>{displayName}</Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            Total Games: <Text style={{ color: "#1976d2" }}>{ownedGames}</Text>
           </Text>
-        </View>
-        <View style={styles.metaRow}>
-          <FontAwesome5 name="clock" size={20} color="#1976d2" style={styles.metaIcon} />
-          <Text style={styles.metaText}>
-            Total Play Time: <Text style={styles.metaValue}>{playTimeYears} years</Text>
-          </Text>
-        </View>
-        <View style={styles.metaRow}>
-          <FontAwesome5 name="star" size={20} color="#1976d2" style={styles.metaIcon} />
-          <Text style={styles.metaText}>
-            Perfect Games:{" "}
-            <Text style={styles.metaValue}>
-              {perfectGames} ({perfectGamesPct}%)
-            </Text>
-          </Text>
-        </View>
-        <View style={styles.metaRow}>
-          <MaterialIcons name="emoji-events" size={22} color="#1976d2" style={styles.metaIcon} />
-          <Text style={styles.metaText}>
-            Achievements Unlocked:{" "}
-            <Text style={styles.metaValue}>
-              {unlockedAchievements} ({achievementsPct}%)
-            </Text>
-          </Text>
-        </View>
-      </View>
+          <View style={styles.metaContainer}>
+            <View style={styles.metaRow}>
+              <MaterialIcons name="check-circle" size={22} color="#1976d2" style={styles.metaIcon} />
+              <Text style={styles.metaText}>
+                Games Played:{" "}
+                <Text style={styles.metaValue}>
+                  {playedGames} ({gamesCompletedPct}%)
+                </Text>
+              </Text>
+            </View>
+            <View style={styles.metaRow}>
+              <FontAwesome5 name="clock" size={20} color="#1976d2" style={styles.metaIcon} />
+              <Text style={styles.metaText}>
+                Total Play Time: <Text style={styles.metaValue}>{playTimeYears} years</Text>
+              </Text>
+            </View>
+            <View style={styles.metaRow}>
+              <FontAwesome5 name="star" size={20} color="#1976d2" style={styles.metaIcon} />
+              <Text style={styles.metaText}>
+                Perfect Games:{" "}
+                <Text style={styles.metaValue}>
+                  {perfectGames} ({perfectGamesPct}%)
+                </Text>
+              </Text>
+            </View>
+            <View style={styles.metaRow}>
+              <MaterialIcons name="emoji-events" size={22} color="#1976d2" style={styles.metaIcon} />
+              <Text style={styles.metaText}>
+                Achievements Unlocked:{" "}
+                <Text style={styles.metaValue}>
+                  {unlockedAchievements} ({achievementsPct}%)
+                </Text>
+              </Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </ScreenContainer>

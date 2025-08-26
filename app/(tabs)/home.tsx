@@ -69,37 +69,40 @@ export default function Home() {
   )
 
   // Fetch achievements for the selected date
-  const fetchForDate = useCallback((d: dayjs.Dayjs, opts?: { isRefresh?: boolean }) => {
-    if (!steamId) return
-    if (opts?.isRefresh) setRefreshing(true)
-    else setLoading(true)
-    const tzOffset = d.format("Z")
-    const startOfDay = d.hour(0).minute(0).second(0).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
-    const endOfDay = d.hour(23).minute(59).second(59).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
-    request(API_URL, playerUnlockedAchievements, {
-      player: steamId,
-      range: [startOfDay, endOfDay],
-      orderBy: "-datetime",
-    })
-      .then((data: any) => {
-        const edges = data?.player?.unlockedAchievements?.edges || []
-        const mapped: Achievement[] = edges.map((edge: any) => ({
-          id: edge.node.id,
-          name: edge.node.achievement.displayName,
-          description: edge.node.achievement.description || "",
-          iconUrl: edge.node.achievement.iconUrl,
-          gameName: edge.node.game?.name,
-          gameId: edge.node.game?.id,
-          difficultyPercentage: edge.node.game?.difficultyPercentage,
-        }))
-        setAchievements(mapped)
-        setPrimaryIdx(0)
+  const fetchForDate = useCallback(
+    (d: dayjs.Dayjs, opts?: { isRefresh?: boolean }) => {
+      if (!steamId) return
+      if (opts?.isRefresh) setRefreshing(true)
+      else setLoading(true)
+      const tzOffset = d.format("Z")
+      const startOfDay = d.hour(0).minute(0).second(0).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
+      const endOfDay = d.hour(23).minute(59).second(59).millisecond(0).format(`YYYY-MM-DDTHH:mm:ss${tzOffset}`)
+      request(API_URL, playerUnlockedAchievements, {
+        player: steamId,
+        range: [startOfDay, endOfDay],
+        orderBy: "-datetime",
       })
-      .finally(() => {
-        if (opts?.isRefresh) setRefreshing(false)
-        else setLoading(false)
-      })
-  }, [steamId])
+        .then((data: any) => {
+          const edges = data?.player?.unlockedAchievements?.edges || []
+          const mapped: Achievement[] = edges.map((edge: any) => ({
+            id: edge.node.id,
+            name: edge.node.achievement.displayName,
+            description: edge.node.achievement.description || "",
+            iconUrl: edge.node.achievement.iconUrl,
+            gameName: edge.node.game?.name,
+            gameId: edge.node.game?.id,
+            difficultyPercentage: edge.node.game?.difficultyPercentage,
+          }))
+          setAchievements(mapped)
+          setPrimaryIdx(0)
+        })
+        .finally(() => {
+          if (opts?.isRefresh) setRefreshing(false)
+          else setLoading(false)
+        })
+    },
+    [steamId]
+  )
 
   useEffect(() => {
     if (!steamId) return
@@ -133,67 +136,74 @@ export default function Home() {
         contentContainerStyle={{ flexGrow: 1 }}
         directionalLockEnabled
       >
-      <View style={styles.centerWrap} {...panResponder.panHandlers}>
-        {/* Date above the card, constrained to card width */}
-        <View style={styles.dateContainer}>
-          <Text style={styles.headerDate} selectable={false}>
-            {isToday ? "Today" : date.format("dddd Do MMMM")}
-          </Text>
-        </View>
-        {loading ? (
-          <View style={styles.skeletonContainer}>
-            <View style={[styles.skeletonCard, styles.skeletonCardMin]}>
-              <View style={styles.skeletonIcon} />
-              <View style={styles.skeletonTitle} />
-              <View style={styles.skeletonDescLine} />
-              <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
-              <View style={styles.skeletonDescPad} />
-              {/* Reserve space similar to info spacer between text and row */}
-              <View style={styles.skeletonInfoSpacer} />
-              {/* Placeholder row to reserve space for achievement thumbnails */}
-              <View style={styles.skeletonAchRow}>
-                <View style={styles.skeletonMiniIcon} />
-                <View style={styles.skeletonMiniIcon} />
-                <View style={styles.skeletonMiniIcon} />
-                <View style={styles.skeletonMiniIcon} />
+        <View style={styles.centerWrap} {...panResponder.panHandlers}>
+          {/* Date above the card, constrained to card width */}
+          <View style={styles.dateContainer}>
+            <Text style={styles.headerDate} selectable={false}>
+              {isToday ? "Today" : date.format("dddd Do MMMM")}
+            </Text>
+          </View>
+          {loading ? (
+            <View style={styles.skeletonContainer}>
+              <View style={[styles.skeletonCard, styles.skeletonCardMin]}>
+                <View style={styles.skeletonIcon} />
+                <View style={styles.skeletonTitle} />
+                <View style={styles.skeletonDescLine} />
+                <View style={[styles.skeletonDescLine, styles.skeletonDescShort]} />
+                <View style={styles.skeletonDescPad} />
+                {/* Reserve space similar to info spacer between text and row */}
+                <View style={styles.skeletonInfoSpacer} />
+                {/* Placeholder row to reserve space for achievement thumbnails */}
+                <View style={styles.skeletonAchRow}>
+                  <View style={styles.skeletonMiniIcon} />
+                  <View style={styles.skeletonMiniIcon} />
+                  <View style={styles.skeletonMiniIcon} />
+                  <View style={styles.skeletonMiniIcon} />
+                </View>
+              </View>
+            </View>
+          ) : (
+            <AchievementDisplay
+              achievements={achievements}
+              primaryIdx={primaryIdx}
+              onSelectAchievement={handleSelectAchievement}
+              steamId={steamId}
+              isToday={date.isSame(dayjs(), "day")}
+            />
+          )}
+          {/* Actions below the card, aligned right */}
+          <View style={styles.belowCardActionsOuter}>
+            <View style={styles.belowCardActionsInner}>
+              <View style={styles.dateActionsRow}>
+                {!isToday && (
+                  <Pressable
+                    onPress={() => setDate(dayjs())}
+                    style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.datePillText} selectable={false}>
+                      Today
+                    </Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={handleJumpOpen}
+                  style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.linkBtnText} selectable={false}>
+                    Select date
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>
-        ) : (
-          <AchievementDisplay
-            achievements={achievements}
-            primaryIdx={primaryIdx}
-            onSelectAchievement={handleSelectAchievement}
-            steamId={steamId}
-            isToday={date.isSame(dayjs(), "day")}
-          />
-        )}
-        {/* Actions below the card, aligned right */}
-        <View style={styles.belowCardActionsOuter}>
-          <View style={styles.belowCardActionsInner}>
-            <View style={styles.dateActionsRow}>
-              {!isToday && (
-                <Pressable
-                  onPress={() => setDate(dayjs())}
-                  style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}
-                >
-                  <Text style={styles.datePillText} selectable={false}>Today</Text>
-                </Pressable>
-              )}
-              <Pressable onPress={handleJumpOpen} style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}>
-                <Text style={styles.linkBtnText} selectable={false}>Select date</Text>
-              </Pressable>
-            </View>
-          </View>
         </View>
-  </View>
-  <SelectDateModal
-        visible={showDateJump}
-        initialDate={date}
-        onCancel={handleJumpCancel}
-        onSubmit={handleJumpSubmit}
-      />
-  </ScrollView>
+        <SelectDateModal
+          visible={showDateJump}
+          initialDate={date}
+          onCancel={handleJumpCancel}
+          onSubmit={handleJumpSubmit}
+        />
+      </ScrollView>
     </ScreenContainer>
   )
 }
@@ -212,8 +222,8 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   dateActionsRow: {
-  flexDirection: "row",
-  marginTop: 6,
+    flexDirection: "row",
+    marginTop: 6,
   },
   centerWrap: {
     flex: 1,
@@ -240,7 +250,7 @@ const styles = StyleSheet.create({
   linkBtn: {
     paddingHorizontal: 2,
     paddingVertical: 4,
-  marginLeft: 12,
+    marginLeft: 12,
   },
   linkBtnText: {
     color: "#2563eb",

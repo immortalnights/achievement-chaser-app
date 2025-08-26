@@ -25,38 +25,41 @@ export default function Recent() {
     setSteamId(activeSteamId)
   }, [activeSteamId])
 
-  const fetchGames = useCallback((opts?: { refresh?: boolean }) => {
-    if (!steamId) return
-    if (opts?.refresh) setRefreshing(true)
-    else setLoading(true)
-    request(API_URL, playerGames, {
-      player: steamId,
-      orderBy: "-lastPlayed",
-      limit: 12,
-    })
-      .then((data: any) => {
-        const edges = data?.player?.games?.edges || []
-        const recentGames: any[] = edges.map((edge: any) => {
-          const g = edge.node.game
-          return {
-            id: g.id,
-            name: g.name,
-            iconUrl: `https://media.steampowered.com/steam/apps/${g.id}/capsule_184x69.jpg`,
-            achievementCount: g.achievementCount,
-            difficultyPercentage: g.difficultyPercentage,
-            lastPlayed: edge.node.lastPlayed,
-            unlocked: edge.node.unlockedAchievementCount,
-            playtimeForever: edge.node.playtimeForever,
-            completed: edge.node.completed,
-          }
+  const fetchGames = useCallback(
+    (opts?: { refresh?: boolean }) => {
+      if (!steamId) return
+      if (opts?.refresh) setRefreshing(true)
+      else setLoading(true)
+      request(API_URL, playerGames, {
+        player: steamId,
+        orderBy: "-lastPlayed",
+        limit: 12,
+      })
+        .then((data: any) => {
+          const edges = data?.player?.games?.edges || []
+          const recentGames: any[] = edges.map((edge: any) => {
+            const g = edge.node.game
+            return {
+              id: g.id,
+              name: g.name,
+              iconUrl: `https://media.steampowered.com/steam/apps/${g.id}/capsule_184x69.jpg`,
+              achievementCount: g.achievementCount,
+              difficultyPercentage: g.difficultyPercentage,
+              lastPlayed: edge.node.lastPlayed,
+              unlocked: edge.node.unlockedAchievementCount,
+              playtimeForever: edge.node.playtimeForever,
+              completed: edge.node.completed,
+            }
+          })
+          setGames(recentGames)
         })
-        setGames(recentGames)
-      })
-      .finally(() => {
-        if (opts?.refresh) setRefreshing(false)
-        else setLoading(false)
-      })
-  }, [steamId])
+        .finally(() => {
+          if (opts?.refresh) setRefreshing(false)
+          else setLoading(false)
+        })
+    },
+    [steamId]
+  )
 
   useEffect(() => {
     if (!steamId) return

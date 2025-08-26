@@ -35,7 +35,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
   }
 
   const handleSubmit = () => {
-  if (Platform.OS === "web" || !hasNativePicker) {
+    if (Platform.OS === "web" || !hasNativePicker) {
       const parsed = dayjs(textFallback)
       if (!parsed.isValid()) {
         setError("Enter a valid date as YYYY-MM-DD")
@@ -53,7 +53,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Select a date</Text>
           <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
-      {Platform.OS === "web" || !hasNativePicker ? (
+          {Platform.OS === "web" || !hasNativePicker ? (
             <TextInput
               value={textFallback}
               onChangeText={(t) => {
@@ -67,7 +67,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
             />
           ) : (
             <View style={styles.pickerWrap}>
-        <DateTimePicker
+              <DateTimePicker
                 mode="date"
                 value={selected.toDate()}
                 onChange={handleChange}
@@ -152,14 +152,14 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     marginTop: 12,
-  flexDirection: "row",
-  justifyContent: "flex-end",
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
   modalBtn: {
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-  marginLeft: 8,
+    marginLeft: 8,
   },
   modalBtnGhost: {
     backgroundColor: "transparent",
