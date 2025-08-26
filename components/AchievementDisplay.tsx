@@ -33,7 +33,7 @@ const AchievementDisplay: React.FC<Props> = ({
   if (achievements.length === 0) {
     return (
       <View style={styles.inlineContainer}>
-  <View style={[styles.card, styles.cardMin]}>
+        <View style={[styles.card, styles.cardMin]}>
           <View style={styles.cardInnerCenter}>
             <Text style={styles.emptyText} selectable={false}>
               {isToday ? "No achievements earned yet today." : "No achievements were earned on this day."}
@@ -51,7 +51,7 @@ const AchievementDisplay: React.FC<Props> = ({
 
   return (
     <View style={styles.inlineContainer}>
-  <View style={[styles.card, styles.cardMin]}>
+      <View style={[styles.card, styles.cardMin]}>
         {/* Date is shown in HomeScreen header */}
         {/* Primary achievement row */}
         <View style={styles.firstRow}>
@@ -77,7 +77,9 @@ const AchievementDisplay: React.FC<Props> = ({
               {primary.gameName}
             </Text>
           )}
-          <Text style={styles.name} selectable={false}>{primary.name}</Text>
+          <Text style={styles.name} selectable={false}>
+            {primary.name}
+          </Text>
           <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail" selectable={false}>
             {primary.description}
           </Text>
@@ -118,7 +120,7 @@ const AchievementDisplay: React.FC<Props> = ({
                     {overflow > 0 && (
                       <View style={styles.multiItem}>
                         <View style={styles.iconFrame}>
-                          <View style={[styles.multiIcon, styles.overflowInner]}> 
+                          <View style={[styles.multiIcon, styles.overflowInner]}>
                             <Text style={styles.overflowText} selectable={false}>{`+${overflow}`}</Text>
                           </View>
                         </View>
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     borderColor: "#444",
   },
   singleIconContainer: {
-  marginBottom: 0,
+    marginBottom: 0,
     borderRadius: 16,
   },
   name: {
@@ -250,12 +252,12 @@ const styles = StyleSheet.create({
   overflowInner: {
     alignItems: "center",
     justifyContent: "center",
-  backgroundColor: "#e3f2fd", // light brand tint to stand out
-  borderColor: "#1976d2",
-  borderWidth: 1,
+    backgroundColor: "#e3f2fd", // light brand tint to stand out
+    borderColor: "#1976d2",
+    borderWidth: 1,
   },
   overflowText: {
-  color: "#1976d2",
+    color: "#1976d2",
     fontWeight: "700",
     fontSize: 18,
   },
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   multiInfo: {
-  marginTop: 8,
+    marginTop: 8,
     alignItems: "center",
   },
   // Stronger shadow for the primary icon

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native"
 import AchievementDisplay, { Achievement } from "../../components/AchievementDisplay"
 import ScreenContainer from "../../components/ScreenContainer"
-import DateJumpModal from "../../components/DateJumpModal"
+import SelectDateModal from "../../components/SelectDateModal"
 import { playerUnlockedAchievements } from "../../graphql/documents"
 
 import dayjs from "dayjs"
@@ -118,9 +118,7 @@ export default function Home() {
       <View style={styles.centerWrap} {...panResponder.panHandlers}>
         {/* Date above the card, constrained to card width */}
         <View style={styles.dateContainer}>
-          <Text style={styles.headerDate}>
-            {isToday ? "Today" : date.format("dddd Do MMMM")}
-          </Text>
+          <Text style={styles.headerDate}>{isToday ? "Today" : date.format("dddd Do MMMM")}</Text>
         </View>
         {loading ? (
           <View style={styles.skeletonContainer}>
@@ -155,18 +153,26 @@ export default function Home() {
           <View style={styles.belowCardActionsInner}>
             <View style={styles.dateActionsRow}>
               {!isToday && (
-                <Pressable onPress={() => setDate(dayjs())} style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}>
+                <Pressable
+                  onPress={() => setDate(dayjs())}
+                  style={({ pressed }) => [styles.datePill, pressed && styles.pressed]}
+                >
                   <Text style={styles.datePillText}>Today</Text>
                 </Pressable>
               )}
               <Pressable onPress={handleJumpOpen} style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}>
-                <Text style={styles.linkBtnText}>Jump to date</Text>
+                <Text style={styles.linkBtnText}>Select date</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </View>
-  <DateJumpModal visible={showDateJump} initialDate={date} onCancel={handleJumpCancel} onSubmit={handleJumpSubmit} />
+      <SelectDateModal
+        visible={showDateJump}
+        initialDate={date}
+        onCancel={handleJumpCancel}
+        onSubmit={handleJumpSubmit}
+      />
     </ScreenContainer>
   )
 }

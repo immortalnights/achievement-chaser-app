@@ -10,7 +10,7 @@ type Props = {
   onSubmit: (date: Dayjs) => void
 }
 
-export default function DateJumpModal({ visible, initialDate, onCancel, onSubmit }: Props) {
+export default function SelectDateModal({ visible, initialDate, onCancel, onSubmit }: Props) {
   const [selected, setSelected] = useState<Dayjs>(initialDate)
   const [textFallback, setTextFallback] = useState<string>(initialDate.format("YYYY-MM-DD"))
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +49,7 @@ export default function DateJumpModal({ visible, initialDate, onCancel, onSubmit
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
-          <Text style={styles.modalTitle}>Go to date</Text>
+          <Text style={styles.modalTitle}>Select a date</Text>
           <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
           {Platform.OS === "web" ? (
             <TextInput
