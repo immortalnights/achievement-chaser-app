@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import dayjs, { Dayjs } from "dayjs"
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker"
 
 type Props = {
   visible: boolean
@@ -10,23 +11,38 @@ type Props = {
 }
 
 export default function DateJumpModal({ visible, initialDate, onCancel, onSubmit }: Props) {
-  const [dateInput, setDateInput] = useState<string>(initialDate.format("YYYY-MM-DD"))
+  const [selected, setSelected] = useState<Dayjs>(initialDate)
+  const [textFallback, setTextFallback] = useState<string>(initialDate.format("YYYY-MM-DD"))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (visible) {
-      setDateInput(initialDate.format("YYYY-MM-DD"))
+      setSelected(initialDate)
+      setTextFallback(initialDate.format("YYYY-MM-DD"))
       setError(null)
     }
   }, [visible, initialDate])
 
+  const handleChange = (_e: DateTimePickerEvent, date?: Date) => {
+    if (date) {
+      const d = dayjs(date)
+      setSelected(d)
+      setTextFallback(d.format("YYYY-MM-DD"))
+      if (error) setError(null)
+    }
+  }
+
   const handleSubmit = () => {
-    const parsed = dayjs(dateInput)
-    if (!parsed.isValid()) {
-      setError("Enter a valid date as YYYY-MM-DD")
+    if (Platform.OS === "web") {
+      const parsed = dayjs(textFallback)
+      if (!parsed.isValid()) {
+        setError("Enter a valid date as YYYY-MM-DD")
+        return
+      }
+      onSubmit(parsed)
       return
     }
-    onSubmit(parsed)
+    onSubmit(selected)
   }
 
   return (
@@ -35,17 +51,28 @@ export default function DateJumpModal({ visible, initialDate, onCancel, onSubmit
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Go to date</Text>
           <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
-          <TextInput
-            value={dateInput}
-            onChangeText={(t) => {
-              setDateInput(t)
-              if (error) setError(null)
-            }}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={styles.modalInput}
-          />
+          {Platform.OS === "web" ? (
+            <TextInput
+              value={textFallback}
+              onChangeText={(t) => {
+                setTextFallback(t)
+                if (error) setError(null)
+              }}
+              placeholder="YYYY-MM-DD"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.modalInput}
+            />
+          ) : (
+            <View style={styles.pickerWrap}>
+              <DateTimePicker
+                mode="date"
+                value={selected.toDate()}
+                onChange={handleChange}
+                display={Platform.OS === "ios" ? "inline" : "calendar"}
+              />
+            </View>
+          )}
           {!!error && <Text style={styles.modalError}>{error}</Text>}
           <View style={styles.modalActions}>
             <Pressable onPress={onCancel} style={({ pressed }) => [styles.modalBtn, styles.modalBtnGhost, pressed && styles.pressed]}>
@@ -102,6 +129,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 16,
     color: "#111827",
+  },
+  pickerWrap: {
+    marginTop: 4,
+    borderWidth: Platform.OS === "ios" ? 0 : 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    overflow: "hidden",
   },
   modalError: {
     color: "#dc2626",

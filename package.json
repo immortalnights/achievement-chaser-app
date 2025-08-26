@@ -13,6 +13,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/datetimepicker": "^8.4.4",
     "dayjs": "^1.11.13",
     "expo": "~53.0.20",
     "expo-blur": "~14.1.5",
