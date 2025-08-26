@@ -82,7 +82,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: Platform.OS === "web" ? activeName || "Profile" : "Profile",
+            title: "Profile",
             tabBarLabel: Platform.OS === "web" ? activeName || "Profile" : () => null,
             tabBarIcon: ({ color, size }) =>
               avatarUrl ? (

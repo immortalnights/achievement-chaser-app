@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router"
 import { ClientError, request } from "graphql-request"
-import React, { useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import ScreenContainer from "../components/ScreenContainer"
 import config from "../config"
@@ -9,12 +9,39 @@ import { searchPlayers } from "../graphql/documents"
 
 export default function Login() {
   const router = useRouter()
-  const { addAccount } = useAccount()
+  const { addAccount, activeSteamId, accounts, loading, setActive } = useAccount()
   const [steamId, setSteamId] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [redirecting, setRedirecting] = useState(false)
+  const didRedirect = useRef(false)
 
   const API_URL = config.API_URL
+
+  // If accounts already exist, go straight into the app. If no active is set, pick the first.
+  useEffect(() => {
+    if (didRedirect.current) return
+    if (loading) return
+    const hasAccounts = (accounts?.length || 0) > 0
+    if (activeSteamId) {
+      didRedirect.current = true
+      setRedirecting(true)
+      router.replace("/(tabs)/home")
+      return
+    }
+    if (hasAccounts) {
+      const first = accounts[0]
+      if (first) {
+        setRedirecting(true)
+        setActive(first.id).then(() => {
+          if (!didRedirect.current) {
+            didRedirect.current = true
+            router.replace("/(tabs)/home")
+          }
+        })
+      }
+    }
+  }, [loading, activeSteamId, accounts, router, setActive])
 
   const handleSubmit = async () => {
     if (submitting) return
@@ -45,6 +72,14 @@ export default function Login() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (loading || redirecting) {
+    return (
+      <ScreenContainer style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </ScreenContainer>
+    )
   }
 
   return (

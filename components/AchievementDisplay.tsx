@@ -124,28 +124,46 @@ const AchievementDisplay: React.FC<Props> = ({
             <View style={styles.infoSpacer} />
             {/* All achievements in one row; dim non-selected */}
             <View style={styles.achRow}>
-              {achievements.map((ach: Achievement, idx: number) => (
-                <TouchableOpacity
-                  key={ach.id}
-                  style={styles.multiItem}
-                  onPress={() => onSelectAchievement && onSelectAchievement(idx)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.iconFrame}>
-                    <Image
-                      source={{ uri: ach.iconUrl }}
-                      style={[
-                        styles.multiIcon,
-                        {
-                          opacity: idx === safeIdx ? 1 : 0.4,
-                          borderColor: idx === safeIdx ? "#1976d2" : "#444",
-                          borderWidth: idx === safeIdx ? 2 : 1,
-                        },
-                      ]}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))}
+              {(() => {
+                const maxVisible = achievements.length === 16 ? 16 : 15
+                const visible = achievements.slice(0, maxVisible)
+                const overflow = achievements.length - maxVisible
+                return (
+                  <>
+                    {visible.map((ach: Achievement, idx: number) => (
+                      <TouchableOpacity
+                        key={ach.id}
+                        style={styles.multiItem}
+                        onPress={() => onSelectAchievement && onSelectAchievement(idx)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.iconFrame}>
+                          <Image
+                            source={{ uri: ach.iconUrl }}
+                            style={[
+                              styles.multiIcon,
+                              {
+                                opacity: idx === safeIdx ? 1 : 0.4,
+                                borderColor: idx === safeIdx ? "#1976d2" : "#444",
+                                borderWidth: idx === safeIdx ? 2 : 1,
+                              },
+                            ]}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                    {overflow > 0 && (
+                      <View style={styles.multiItem}>
+                        <View style={styles.iconFrame}>
+                          <View style={[styles.multiIcon, styles.overflowInner]}> 
+                            <Text style={styles.overflowText}>{`+${overflow}`}</Text>
+                          </View>
+                        </View>
+                      </View>
+                    )}
+                  </>
+                )
+              })()}
             </View>
           </>
         )}
@@ -265,6 +283,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderWidth: 1,
     borderColor: "#444",
+  },
+  overflowInner: {
+    alignItems: "center",
+    justifyContent: "center",
+  backgroundColor: "#e3f2fd", // light brand tint to stand out
+  borderColor: "#1976d2",
+  borderWidth: 1,
+  },
+  overflowText: {
+  color: "#1976d2",
+    fontWeight: "700",
+    fontSize: 18,
   },
   iconFrame: {
     width: 64,
