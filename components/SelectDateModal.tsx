@@ -1,4 +1,4 @@
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker"
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker"
 import dayjs, { Dayjs } from "dayjs"
 import React, { useEffect, useState } from "react"
 import { Modal, NativeModules, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
@@ -16,6 +16,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
   const [selected, setSelected] = useState<Dayjs>(initialDate)
   const [textFallback, setTextFallback] = useState<string>(initialDate.format("YYYY-MM-DD"))
   const [error, setError] = useState<string | null>(null)
+  const [androidOpened, setAndroidOpened] = useState(false)
 
   useEffect(() => {
     if (visible) {
@@ -25,14 +26,7 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
     }
   }, [visible, initialDate])
 
-  const handleChange = (_e: DateTimePickerEvent, date?: Date) => {
-    if (date) {
-      const d = dayjs(date)
-      setSelected(d)
-      setTextFallback(d.format("YYYY-MM-DD"))
-      if (error) setError(null)
-    }
-  }
+  // no-op on web-only flow; android uses imperative API
 
   const handleSubmit = () => {
     if (Platform.OS === "web" || !hasNativePicker) {
@@ -47,13 +41,48 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
     onSubmit(selected)
   }
 
+  // ANDROID: Use imperative API, no custom dialog UI
+  useEffect(() => {
+    if (Platform.OS !== "android") return
+    if (!visible) {
+      setAndroidOpened(false)
+      return
+    }
+    if (androidOpened) return
+    setAndroidOpened(true)
+
+    if (!hasNativePicker) {
+      // No native module available; cancel to avoid broken UI
+      onCancel()
+      return
+    }
+
+    DateTimePickerAndroid.open({
+      mode: "date",
+      value: initialDate.toDate(),
+      onChange: (event, date) => {
+        if (event.type === "set" && date) {
+          onSubmit(dayjs(date))
+        } else {
+          onCancel()
+        }
+      },
+    })
+  }, [visible, androidOpened, hasNativePicker, initialDate, onCancel, onSubmit])
+
+  // IOS: empty placeholder (no dialog)
+  if (Platform.OS === "ios") {
+    return null
+  }
+
+  // WEB: actual dialog with TextInput fallback
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
+    <Modal transparent visible={visible && Platform.OS === "web"} animationType="fade" onRequestClose={onCancel}>
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
           <Text style={styles.modalTitle}>Select a date</Text>
           <Text style={styles.modalHelp}>Enter a date as YYYY-MM-DD</Text>
-          {Platform.OS === "web" || !hasNativePicker ? (
+          {Platform.OS === "web" ? (
             <TextInput
               value={textFallback}
               onChangeText={(t) => {
@@ -63,18 +92,19 @@ export default function SelectDateModal({ visible, initialDate, onCancel, onSubm
               placeholder="YYYY-MM-DD"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={handleSubmit}
+              onKeyPress={(e) => {
+                // Extra safety for RN Web environments where onSubmitEditing may not fire
+                // @ts-ignore - RN Web key property
+                if (e.nativeEvent?.key === "Enter") {
+                  handleSubmit()
+                }
+              }}
               style={styles.modalInput}
             />
-          ) : (
-            <View style={styles.pickerWrap}>
-              <DateTimePicker
-                mode="date"
-                value={selected.toDate()}
-                onChange={handleChange}
-                display={Platform.OS === "ios" ? "inline" : "calendar"}
-              />
-            </View>
-          )}
+          ) : null}
           {!!error && <Text style={styles.modalError}>{error}</Text>}
           <View style={styles.modalActions}>
             <Pressable

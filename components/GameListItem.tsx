@@ -180,7 +180,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
               <View
                 style={[
                   localStyles.recentAchRow,
-                  { width: "100%", minWidth: 0, marginTop: 8, justifyContent: "space-around", flexWrap: "wrap" },
+                  { width: "100%", minWidth: 0, marginTop: 8, justifyContent: "flex-start", flexWrap: "wrap" },
                 ]}
               >
                 {recent.slice(0, desiredCount).map((a) => (
@@ -210,7 +210,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
                   localStyles.recentAchRow,
                   {
                     minWidth: 32 * desiredCount + 8 * (desiredCount - 1),
-                    justifyContent: "space-around",
+                    justifyContent: "flex-start",
                     flexWrap: "wrap",
                   },
                 ]}
