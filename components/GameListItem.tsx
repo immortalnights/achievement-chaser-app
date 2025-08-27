@@ -40,7 +40,13 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
 
   useEffect(() => {
     let ignore = false
-    if (!steamId || !item?.id) return
+    // Skip request if player hasn't unlocked any achievements for this game (or missing ids)
+    if (!steamId || !item?.id || !(Number(item?.unlocked) > 0)) {
+      setRecent([])
+      return () => {
+        ignore = true
+      }
+    }
     request(API_URL, playerUnlockedAchievements, {
       player: steamId,
       game: Number(item.id),
@@ -59,7 +65,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
     return () => {
       ignore = true
     }
-  }, [steamId, item?.id, desiredCount])
+  }, [steamId, item?.id, item?.unlocked, desiredCount])
 
   return (
     <View style={styles.gameRow}>
