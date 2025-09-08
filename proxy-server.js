@@ -4,7 +4,8 @@ const https = require("https")
 const url = require("url")
 const { Buffer } = require("buffer")
 
-const TARGET = "https://steam.seventh.space/graphql/"
+// Allow overriding the target via a single CLI argument: `node proxy-server.js https://example.com/graphql/`
+const TARGET = process.argv[2] ? process.argv[2].replace(/"/g, "") : "https://steam.seventh.space/graphql/"
 const PORT = 4000
 
 const server = http.createServer((req, res) => {
@@ -26,8 +27,8 @@ const server = http.createServer((req, res) => {
       body += chunk
     })
     req.on("end", () => {
-      console.log(`[${new Date().toISOString()}] Proxying request to ${TARGET}`)
-      const options = url.parse(TARGET)
+  console.log(`[${new Date().toISOString()}] Proxying request to ${TARGET}`)
+  const options = url.parse(TARGET)
       options.method = "POST"
       options.headers = {
         "Content-Type": "application/json",
