@@ -10,6 +10,7 @@
     "lint": "expo lint",
     "format": "prettier --write .",
     "proxy": "node ./proxy-server.js",
+    "proxy:dev": "node ./proxy-server.js http://127.0.0.1:8000/graphql/",
     "deploy": "eas build --platform android --profile production && eas submit --platform android"
   },
   "dependencies": {
