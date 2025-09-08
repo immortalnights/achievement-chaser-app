@@ -1,17 +1,5 @@
+import dayjs from "dayjs"
 import { gql } from "graphql-request"
-// Place to define and export GraphQL queries, mutations, and fragments
-
-// Example:
-// export const GET_ACHIEVEMENTS = `
-//   query GetAchievements($date: String!, $steamId: String!) {
-//     achievements(date: $date, steamId: $steamId) {
-//       id
-//       name
-//       description
-//       iconUrl
-//     }
-//   }
-// `;
 
 // Add your GraphQL documents below
 export const searchPlayers = gql`
@@ -25,19 +13,25 @@ export const searchPlayers = gql`
 `
 
 export const playerProfile = gql`
-  query PlayerProfile($player: BigInt!) {
+  query PlayerProfile($player: BigInt!, $year: Int = ${dayjs().year()}) {
     player(id: $player) {
       id
       name
       avatarLargeUrl
       profileUrl
       profile {
-        ownedGames
-        perfectGames
-        playedGames
-        totalPlaytime
-        lockedAchievements
-        unlockedAchievements
+            ownedGames
+            playedGames
+            totalPlaytime
+            perfectGames
+            lockedAchievements
+            unlockedAchievements
+            playedGamesForYear(year: $year)
+  playedGamesForYear(year: $year)
+  totalPlaytimeForYear(year: $year)
+            totalPlaytimeForYear(year: $year)
+            perfectGamesForYear(year: $year)
+            unlockedAchievementForYear(year: $year)
       }
     }
   }

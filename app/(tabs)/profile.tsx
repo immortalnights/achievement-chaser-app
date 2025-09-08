@@ -1,4 +1,5 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"
+import dayjs from "dayjs"
 import { useRouter } from "expo-router"
 import { request } from "graphql-request"
 import React, { useCallback, useEffect, useState } from "react"
@@ -34,7 +35,6 @@ export default function Profile() {
     setSteamId(activeSteamId)
   }, [activeSteamId])
 
-  // If there are no accounts left, return to login
   useEffect(() => {
     if (!accountsLoading && !activeSteamId) {
       router.replace("../login")
@@ -108,11 +108,16 @@ export default function Profile() {
     )
   }
 
-  const ownedGames = profile.profile.ownedGames || 0
+  const ownedGames = profile?.profile?.ownedGames || 0
   const perfectGames = profile.profile.perfectGames || 0
+  const perfectGamesYear = profile.profile.perfectGamesForYear || 0
   const playedGames = profile.profile.playedGames || 0
   const totalPlaytime = profile.profile.totalPlaytime || 0
   const unlockedAchievements = profile.profile.unlockedAchievements || 0
+  const unlockedAchievementsYear = profile.profile.unlockedAchievementForYear || 0
+  const playedGamesYear = profile.profile.playedGamesForYear || 0
+  const totalPlaytimeYear = profile.profile.totalPlaytimeForYear || 0
+  const currentYear = dayjs().year()
   const lockedAchievements = profile.profile.lockedAchievements || 0
   const displayName = profile.name
   const profileUrl = profile.profileUrl
@@ -173,6 +178,33 @@ export default function Profile() {
                   {unlockedAchievements} ({achievementsPct}%)
                 </Text>
               </Text>
+            </View>
+            <View style={styles.yearBlock}>
+              <Text style={styles.yearBlockTitle}>{currentYear} Highlights</Text>
+              <View style={styles.yearRow}>
+                <MaterialIcons name="check-circle" size={20} color="#1d4ed8" style={styles.yearIcon} />
+                <Text style={styles.yearText}>
+                  Games Played: <Text style={styles.yearValue}>{playedGamesYear}</Text>
+                </Text>
+              </View>
+              <View style={styles.yearRow}>
+                <FontAwesome5 name="clock" size={18} color="#1d4ed8" style={styles.yearIcon} />
+                <Text style={styles.yearText}>
+                  Playtime: <Text style={styles.yearValue}>{(totalPlaytimeYear / (60 * 24)).toFixed(1)} days</Text>
+                </Text>
+              </View>
+              <View style={styles.yearRow}>
+                <MaterialIcons name="star" size={20} color="#1d4ed8" style={styles.yearIcon} />
+                <Text style={styles.yearText}>
+                  Perfect Games: <Text style={styles.yearValue}>{perfectGamesYear}</Text>
+                </Text>
+              </View>
+              <View style={styles.yearRow}>
+                <MaterialIcons name="emoji-events" size={20} color="#1d4ed8" style={styles.yearIcon} />
+                <Text style={styles.yearText}>
+                  Achievements: <Text style={styles.yearValue}>{unlockedAchievementsYear}</Text>
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -237,6 +269,37 @@ const styles = StyleSheet.create({
   metaValue: {
     fontWeight: "bold",
     color: "#1976d2",
+  },
+  yearBlock: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "#f1f5f9",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#dbe2ea",
+  },
+  yearBlockTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  yearRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  yearIcon: {
+    marginRight: 8,
+  },
+  yearText: {
+    fontSize: 14,
+    color: "#1e293b",
+  },
+  yearValue: {
+    fontWeight: "700",
+    color: "#1d4ed8",
   },
   // removed logout styles as logout is no longer part of the flow
 })
