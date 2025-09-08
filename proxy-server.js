@@ -27,14 +27,18 @@ const server = http.createServer((req, res) => {
       body += chunk
     })
     req.on("end", () => {
-  console.log(`[${new Date().toISOString()}] Proxying request to ${TARGET}`)
-  const options = url.parse(TARGET)
-      options.method = "POST"
-      options.headers = {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body),
+      console.log(`[${new Date().toISOString()}] Proxying request to ${TARGET}`)
+      const parsed = url.parse(TARGET)
+      const client = parsed.protocol === "http:" ? http : https
+      const options = {
+        ...parsed,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+        },
       }
-      const proxyReq = https.request(options, (proxyRes) => {
+      const proxyReq = client.request(options, (proxyRes) => {
         console.log(`[${new Date().toISOString()}] Proxied response status: ${proxyRes.statusCode}`)
         res.writeHead(proxyRes.statusCode, {
           ...proxyRes.headers,
