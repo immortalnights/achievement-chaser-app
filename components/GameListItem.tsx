@@ -8,6 +8,25 @@ import { playerUnlockedAchievements } from "../graphql/documents"
 
 const API_URL = config.API_URL
 
+function LastPlayedText({ lastPlayed, isSmall }: { lastPlayed: string; isSmall: boolean }) {
+  // If the date is not this year, include the year in the display
+  const isThisYear = dayjs(lastPlayed).isSame(dayjs(), "year")
+  const formatString = isThisYear ? "ddd, D MMM" : "ddd, D MMM YYYY"
+  const formatTime = isSmall ? "" : ", h:mm A"
+
+  return isSmall ? (
+    <Text>
+      {dayjs(lastPlayed).format(formatString)}{" "}
+      <Text style={{ fontWeight: "normal" }}>({dayjs(lastPlayed).fromNow()})</Text>
+    </Text>
+  ) : (
+    <Text>
+      {dayjs(lastPlayed).format(`${formatString}${formatTime}`)}{" "}
+      <Text style={{ fontWeight: "normal" }}>({dayjs(lastPlayed).fromNow()})</Text>
+    </Text>
+  )
+}
+
 export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any; steamId?: string | null }) => {
   const [error, setError] = useState(false)
   const [recent, setRecent] = useState<{ id: string; iconUrl: string }[]>([])
@@ -150,12 +169,7 @@ export const GameListItem = ({ item, styles, steamId }: { item: any; styles: any
               Last Played:{" "}
               <Text style={styles.metaValue}>
                 {dayjs(item.lastPlayed).isValid() ? (
-                  <>
-                    {isSmall
-                      ? dayjs(item.lastPlayed).format("ddd, D MMM")
-                      : dayjs(item.lastPlayed).format("dddd, D MMMM, h:mm A")}{" "}
-                    (<Text style={styles.metaValue}>{dayjs(item.lastPlayed).fromNow()}</Text>)
-                  </>
+                  <LastPlayedText lastPlayed={item.lastPlayed} isSmall={isSmall} />
                 ) : (
                   "Never played"
                 )}
