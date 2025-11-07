@@ -13,25 +13,23 @@ export const searchPlayers = gql`
 `
 
 export const playerProfile = gql`
-  query PlayerProfile($player: BigInt!, $year: Int = ${dayjs().year()}) {
+  query PlayerProfile($player: BigInt!, $year: Decimal = ${dayjs().year()}) {
     player(id: $player) {
       id
       name
       avatarLargeUrl
       profileUrl
       profile {
-            ownedGames
-            playedGames
-            totalPlaytime
-            perfectGames
-            lockedAchievements
-            unlockedAchievements
-            playedGamesForYear(year: $year)
-  playedGamesForYear(year: $year)
-  totalPlaytimeForYear(year: $year)
-            totalPlaytimeForYear(year: $year)
-            perfectGamesForYear(year: $year)
-            unlockedAchievementForYear(year: $year)
+        ownedGames
+        playedGames
+        totalPlaytime
+        perfectGames
+        lockedAchievements
+        unlockedAchievements
+        playedGamesForYear(year: $year)
+        totalPlaytimeForYear(year: $year)
+        perfectGamesForYear(year: $year)
+        unlockedAchievementForYear(year: $year)
       }
     }
   }
@@ -65,7 +63,7 @@ export const playerGames = gql`
 export const playerUnlockedAchievements = gql`
   query PlayerUnlockedAchievements(
     $player: BigInt!
-    $game: Int
+    $game: Decimal
     $year: Decimal
     $range: [DateTime]
     $orderBy: String
