@@ -27,7 +27,6 @@ export const playerProfile = gql`
         lockedAchievements
         unlockedAchievements
         playedGamesForYear(year: $year)
-        totalPlaytimeForYear(year: $year)
         perfectGamesForYear(year: $year)
         unlockedAchievementForYear(year: $year)
       }

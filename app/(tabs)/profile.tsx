@@ -116,7 +116,6 @@ export default function Profile() {
   const unlockedAchievements = profile.profile.unlockedAchievements || 0
   const unlockedAchievementsYear = profile.profile.unlockedAchievementForYear || 0
   const playedGamesYear = profile.profile.playedGamesForYear || 0
-  const totalPlaytimeYear = profile.profile.totalPlaytimeForYear || 0
   const currentYear = dayjs().year()
   const lockedAchievements = profile.profile.lockedAchievements || 0
   const displayName = profile.name
@@ -185,12 +184,6 @@ export default function Profile() {
                 <MaterialIcons name="check-circle" size={20} color="#1d4ed8" style={styles.yearIcon} />
                 <Text style={styles.yearText}>
                   Games Played: <Text style={styles.yearValue}>{playedGamesYear}</Text>
-                </Text>
-              </View>
-              <View style={styles.yearRow}>
-                <FontAwesome5 name="clock" size={18} color="#1d4ed8" style={styles.yearIcon} />
-                <Text style={styles.yearText}>
-                  Playtime: <Text style={styles.yearValue}>{(totalPlaytimeYear / (60 * 24)).toFixed(1)} days</Text>
                 </Text>
               </View>
               <View style={styles.yearRow}>
