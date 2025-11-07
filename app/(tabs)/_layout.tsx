@@ -61,8 +61,8 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            title: "Home",
-            tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
+            title: "Daily Achievements",
+            tabBarIcon: ({ color, size }) => <MaterialIcons name="star" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
